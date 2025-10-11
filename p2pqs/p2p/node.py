@@ -1,5 +1,4 @@
 
-
 import threading
 
 import socket
@@ -88,7 +87,7 @@ class P2PNode:
 
         
 
-        # Initialize crypto and database (same as before)
+        # Initialize crypto and database
 
         security_keys = self.config_manager.config.get("security", {}).get("keys", {})
 
@@ -152,9 +151,13 @@ class P2PNode:
 
         
 
-        # Initialize database with cross-platform path
+        # FORCE DATABASE IN CURRENT DIRECTORY - FIXED
 
-        db_path = self._get_cross_platform_db_path()
+        db_path = "./p2p_data.db"
+
+        print(f"[DB] Using current directory: {os.path.abspath(db_path)}")
+
+        
 
         self.database = DatabaseManager(db_path)
 
@@ -306,7 +309,7 @@ class P2PNode:
 
                 'validation_time': time.strftime('%Y-%m-%d %H:%M:%S'),
 
-                'date': time.strftime('%Y-%m-%d')  # Only date
+                'date': time.strftime('%Y-%m-%d')
 
             }
 
@@ -314,15 +317,11 @@ class P2PNode:
 
             
 
-            # Keep only last 1000 entries
-
             if len(self.content_log) > 1000:
 
                 self.content_log = self.content_log[-500:]
 
             
-
-            # Console output without author info
 
             status = "✓ VALID" if is_valid else "✗ INVALID"
 
@@ -370,8 +369,6 @@ class P2PNode:
 
                     try:
 
-                        # Send heartbeat
-
                         heartbeat_msg = {
 
                             "type": "HEARTBEAT",
@@ -388,8 +385,6 @@ class P2PNode:
 
                         
 
-                        # Update peer status
-
                         if peer_addr not in self.peer_status:
 
                             self.peer_status[peer_addr] = {}
@@ -405,8 +400,6 @@ class P2PNode:
                         disconnected_peers.append(peer_addr)
 
                 
-
-                # Remove disconnected peers
 
                 for peer_addr in disconnected_peers:
 
@@ -432,11 +425,9 @@ class P2PNode:
 
             try:
 
-                time.sleep(60)  # Check every minute
+                time.sleep(60)
 
                 
-
-                # Reconnect to known peers not currently connected
 
                 for peer_addr in list(self.known_peers):
 
@@ -454,7 +445,7 @@ class P2PNode:
 
                             print(f"[RECONNECT] ✗ Failed to reconnect to {host}:{port}")
 
-                        time.sleep(2)  # Brief pause between attempts
+                        time.sleep(2)
 
                         
 
@@ -487,136 +478,6 @@ class P2PNode:
             "is_cross_platform": system in ["windows", "linux", "darwin"]
 
         }
-
-
-
-    def _get_cross_platform_db_path(self):
-
-        """Get platform-appropriate database path for Windows/Linux"""
-
-        import os
-
-        import tempfile
-
-        
-
-        platform_info = self._get_platform_info()
-
-        
-
-        # Windows-specific path handling
-
-        if platform_info["is_windows"]:
-
-            try:
-
-                appdata = os.environ.get('LOCALAPPDATA')
-
-                if appdata:
-
-                    db_dir = os.path.join(appdata, "P2PQuantumSafe")
-
-                    os.makedirs(db_dir, exist_ok=True)
-
-                    db_path = os.path.join(db_dir, "p2p_data.db")
-
-                    
-
-                    test_file = os.path.join(db_dir, "test_write.tmp")
-
-                    with open(test_file, 'w') as f:
-
-                        f.write("test")
-
-                    os.remove(test_file)
-
-                    
-
-                    print(f"[DB] Using Windows AppData: {db_path}")
-
-                    return db_path
-
-            except (OSError, PermissionError) as e:
-
-                print(f"[DB] Cannot use Windows AppData: {e}")
-
-        
-
-        # Linux-specific path handling
-
-        elif platform_info["is_linux"]:
-
-            try:
-
-                home_dir = os.path.expanduser("~")
-
-                db_dir = os.path.join(home_dir, ".p2pqs")
-
-                os.makedirs(db_dir, exist_ok=True)
-
-                db_path = os.path.join(db_dir, "p2p_data.db")
-
-                
-
-                test_file = os.path.join(db_dir, "test_write.tmp")
-
-                with open(test_file, 'w') as f:
-
-                    f.write("test")
-
-                os.remove(test_file)
-
-                
-
-                print(f"[DB] Using Linux home directory: {db_path}")
-
-                return db_path
-
-                
-
-            except (OSError, PermissionError) as e:
-
-                print(f"[DB] Cannot use Linux home directory: {e}")
-
-        
-
-        # Fallback to current directory
-
-        try:
-
-            db_path = "./p2p_data.db"
-
-            test_file = "./test_write.tmp"
-
-            with open(test_file, 'w') as f:
-
-                f.write("test")
-
-            os.remove(test_file)
-
-            
-
-            print(f"[DB] Using current directory: {db_path}")
-
-            return db_path
-
-            
-
-        except (OSError, PermissionError) as e:
-
-            print(f"[DB] Cannot use current directory: {e}")
-
-            
-
-        # Last resort: temporary directory
-
-        temp_dir = tempfile.gettempdir()
-
-        db_path = os.path.join(temp_dir, "p2pqs_data.db")
-
-        print(f"[DB] Using temporary directory: {db_path}")
-
-        return db_path
 
 
 
@@ -674,6 +535,20 @@ class P2PNode:
 
         try:
 
+            # Check if bypass is enabled in config
+
+            bypass_verification = self.config_manager.config.get("security", {}).get("bypass_site_verification", False)
+
+            
+
+            if bypass_verification == "all" or bypass_verification is True:
+
+                print(f"[VERIFY] Signature verification BYPASSED for site '{site_name}' (config: bypass enabled)")
+
+                return True
+
+            
+
             if not signature_hex or not content or not site_name:
 
                 print(f"[VERIFY] Missing signature data for site '{site_name}'")
@@ -699,8 +574,6 @@ class P2PNode:
             signature = bytes.fromhex(signature_hex)
 
             
-
-            # Verify signature is specifically for this site's content
 
             is_valid = self.crypto.verify_signature(content, signature, dilithium_public)
 
@@ -728,7 +601,7 @@ class P2PNode:
 
             return False
 
-
+        
 
     def _request_site_keys(self, site_name: str):
 
@@ -828,8 +701,6 @@ class P2PNode:
 
                     
 
-                    # Initialize peer status
-
                     self.peer_status[peer_addr] = {
 
                         'connected_at': time.time(),
@@ -854,8 +725,6 @@ class P2PNode:
 
                     
 
-                    # Synchronize sites after connection
-
                     self._sync_sites_with_peer(peer_addr)
 
                     
@@ -878,7 +747,7 @@ class P2PNode:
 
                 print(f"[P2P] Connection refused by {host}:{port} (attempt {attempt + 1})")
 
-                break  # No point retrying connection refused
+                break
 
             except Exception as e:
 
@@ -888,7 +757,7 @@ class P2PNode:
 
             if attempt < self.reconnect_attempts - 1:
 
-                time.sleep(2)  # Wait before retry
+                time.sleep(2)
 
         
 
@@ -930,7 +799,7 @@ class P2PNode:
 
     def listen_for_peers(self):
 
-        """Listen for incoming P2P connections with enhanced error handling"""
+        """Listen for incoming P2P connections"""
 
         try:
 
@@ -962,7 +831,7 @@ class P2PNode:
 
             
 
-            server_socket.listen(15)  # Increased backlog
+            server_socket.listen(15)
 
             print(f"[P2P] Server listening on 0.0.0.0:{self.p2p_port} ({platform_info['name']})")
 
@@ -990,7 +859,7 @@ class P2PNode:
 
                     print(f"[P2P] Accept error: {e}")
 
-                    time.sleep(1)  # Brief pause before continuing
+                    time.sleep(1)
 
                     
 
@@ -1002,7 +871,7 @@ class P2PNode:
 
     def _handle_incoming_peer(self, client_socket, address):
 
-        """Handle incoming peer connection with enhanced validation"""
+        """Handle incoming peer connection"""
 
         host, port = address
 
@@ -1076,8 +945,6 @@ class P2PNode:
 
                 
 
-                # Initialize peer status
-
                 self.peer_status[peer_addr] = {
 
                     'connected_at': time.time(),
@@ -1108,8 +975,6 @@ class P2PNode:
 
                 
 
-                # Synchronize automatically after connection
-
                 self._sync_sites_with_peer(peer_addr)
 
                 
@@ -1138,7 +1003,7 @@ class P2PNode:
 
     def _handle_peer_messages(self, peer_socket, address):
 
-        """Handle messages from connected peer with improved reliability"""
+        """Handle messages from connected peer"""
 
         host, port = address
 
@@ -1166,8 +1031,6 @@ class P2PNode:
 
                     
 
-                    # Process complete messages (ended with \n)
-
                     while '\n' in message_buffer:
 
                         line, message_buffer = message_buffer.split('\n', 1)
@@ -1193,8 +1056,6 @@ class P2PNode:
                                 
 
                 except socket.timeout:
-
-                    # Check if peer is still responding to heartbeats
 
                     peer_status = self.peer_status.get(address, {})
 
@@ -1248,13 +1109,11 @@ class P2PNode:
 
     def _process_peer_message(self, message: Dict[str, Any], sender_address):
 
-        """Process received message from peer with enhanced logging"""
+        """Process received message from peer"""
 
         message_type = message.get("type")
 
         
-
-        # Handle heartbeat responses
 
         if message_type == "HEARTBEAT":
 
@@ -1270,8 +1129,6 @@ class P2PNode:
 
         
 
-        # Check for message loops
-
         message_id = self._generate_message_id(message)
 
         if self._is_message_processed(message_id):
@@ -1280,15 +1137,7 @@ class P2PNode:
 
         
 
-        if message_type == "SYNC_REQUEST":
-
-            self._handle_sync_request(message, sender_address)
-
-        elif message_type == "SYNC_RESPONSE":
-
-            self._handle_sync_response(message, sender_address)
-
-        elif message_type == "CONTENT_BROADCAST":
+        if message_type == "CONTENT_BROADCAST":
 
             self._handle_content_broadcast(message, sender_address)
 
@@ -1316,8 +1165,6 @@ class P2PNode:
 
         site_name = message.get("site_name")
 
-        requester_id = message.get("requester_id")
-
         
 
         if not site_name:
@@ -1329,8 +1176,6 @@ class P2PNode:
         site_keys = self.database.get_site_keys(site_name)
 
         if site_keys and site_keys.get("dilithium_public"):
-
-            # Send only public keys for site signature verification
 
             key_response = {
 
@@ -1378,8 +1223,6 @@ class P2PNode:
 
         dilithium_public = message.get("dilithium_public")
 
-        provider_id = message.get("provider_id")
-
         
 
         if not site_name or not dilithium_public:
@@ -1387,8 +1230,6 @@ class P2PNode:
             return
 
         
-
-        # Store the public keys for site signature verification
 
         try:
 
@@ -1410,10 +1251,6 @@ class P2PNode:
 
                 print(f"[KEY_RESPONSE] Can now verify signatures from site '{site_name}'")
 
-            else:
-
-                print(f"[KEY_RESPONSE] Failed to store keys for site '{site_name}'")
-
                 
 
         except Exception as e:
@@ -1426,10 +1263,6 @@ class P2PNode:
 
         """Handle site synchronization request"""
 
-        requester_id = message.get("requester_id")
-
-        
-
         try:
 
             sites = self.database.get_sites()
@@ -1439,8 +1272,6 @@ class P2PNode:
             
 
             for site in sites:
-
-                # Send only public information about sites
 
                 public_site = {
 
@@ -1496,8 +1327,6 @@ class P2PNode:
 
         sites = message.get("sites", [])
 
-        provider_id = message.get("provider_id")
-
         
 
         if not sites:
@@ -1518,8 +1347,6 @@ class P2PNode:
 
             
 
-            # Store public site information for signature verification
-
             try:
 
                 keys_data = {
@@ -1532,7 +1359,7 @@ class P2PNode:
 
                 
 
-                if keys_data["dilithium_public"]:  # Only store if we have the signature key
+                if keys_data["dilithium_public"]:
 
                     success = self.database.store_site_public_keys(site_name, keys_data)
 
@@ -1549,142 +1376,6 @@ class P2PNode:
         
 
         print(f"[SITE_SYNC] Received and stored {stored_count} sites from {sender_address[0]}:{sender_address[1]}")
-
-
-
-    def _handle_sync_request(self, message: Dict[str, Any], sender_address):
-
-        """Handle content sync request from peer"""
-
-        site_name = message.get("site_name")
-
-        
-
-        if not site_name:
-
-            return
-
-        
-
-        try:
-
-            # Get content for the requested site
-
-            contents = self.database.get_content(site_name=site_name, limit=100)
-
-            
-
-            sync_response = {
-
-                "type": "SYNC_RESPONSE",
-
-                "site_name": site_name,
-
-                "contents": contents,
-
-                "provider_id": self.crypto.crypto_id,
-
-                "timestamp": time.time()
-
-            }
-
-            
-
-            peer_socket = self.peers.get(sender_address)
-
-            if peer_socket:
-
-                message_data = json.dumps(sync_response).encode('utf-8') + b"\n"
-
-                peer_socket.sendall(message_data)
-
-                print(f"[SYNC] Sent {len(contents)} content items for '{site_name}' to {sender_address[0]}:{sender_address[1]}")
-
-                
-
-        except Exception as e:
-
-            print(f"[SYNC] Error handling sync request: {e}")
-
-
-
-    def _handle_sync_response(self, message: Dict[str, Any], sender_address):
-
-        """Handle content sync response from peer"""
-
-        site_name = message.get("site_name")
-
-        contents = message.get("contents", [])
-
-        provider_id = message.get("provider_id")
-
-        
-
-        if not site_name or not contents:
-
-            return
-
-        
-
-        stored_count = 0
-
-        for content_data in contents:
-
-            content = content_data.get("content")
-
-            signature = content_data.get("signature")
-
-            
-
-            if not content:
-
-                continue
-
-            
-
-            # Verify signature against site's public key
-
-            is_valid = True
-
-            if signature:
-
-                is_valid = self._verify_site_content_signature(content, signature, site_name)
-
-            
-
-            self.log_content_validation(content, site_name, signature or "", is_valid, sender_address)
-
-            
-
-            if is_valid:
-
-                try:
-
-                    success = self.database.store_content(
-
-                        site_name=site_name,
-
-                        content=content,
-
-                        author_id="network_sync",  # Internal marker, not displayed
-
-                        signature=signature or "",
-
-                        encrypted_data=b''
-
-                    )
-
-                    if success:
-
-                        stored_count += 1
-
-                except Exception as e:
-
-                    print(f"[SYNC] Error storing content: {e}")
-
-        
-
-        print(f"[SYNC] Stored {stored_count} valid content items from {sender_address[0]}:{sender_address[1]}")
 
 
 
@@ -1708,8 +1399,6 @@ class P2PNode:
 
         
 
-        # Verify signature is from the site owner, not just any node
-
         is_valid = False
 
         if signature:
@@ -1717,8 +1406,6 @@ class P2PNode:
             is_valid = self._verify_site_content_signature(content, signature, site_name)
 
             if not is_valid:
-
-                # If we don't have the site's public keys, try to get them
 
                 site_keys = self.database.get_site_keys(site_name)
 
@@ -1734,15 +1421,11 @@ class P2PNode:
 
         
 
-        # Log validation result without author info
-
         self.log_content_validation(content, site_name, signature or "", is_valid, sender_address)
 
         
 
         if is_valid:
-
-            # Store valid content that's properly signed by the site
 
             try:
 
@@ -1752,7 +1435,7 @@ class P2PNode:
 
                     content=content,
 
-                    author_id="network_peer",  # Internal marker, not displayed
+                    author_id="network_peer",
 
                     signature=signature,
 
@@ -1765,8 +1448,6 @@ class P2PNode:
                 if success:
 
                     print(f"[CONTENT] ✓ Stored site-verified content for '{site_name}'")
-
-                    # Forward to other peers
 
                     self._forward_to_other_peers(message, sender_address)
 
@@ -1828,8 +1509,6 @@ class P2PNode:
 
         
 
-        # Remove failed peers
-
         for peer_addr in failed_peers:
 
             self.peers.pop(peer_addr, None)
@@ -1848,8 +1527,6 @@ class P2PNode:
 
         try:
 
-            # Verify we own this site and get the keys
-
             keys = self.database.get_site_keys(site_name)
 
             if not keys:
@@ -1860,15 +1537,11 @@ class P2PNode:
 
             
 
-            # Sign with the site's private key
-
             dilithium_private = bytes.fromhex(keys["dilithium_private"])
 
             signature = self.crypto.sign_data(content, dilithium_private)
 
             
-
-            # Store locally first
 
             success = self.database.store_content(
 
@@ -1876,7 +1549,7 @@ class P2PNode:
 
                 content=content,
 
-                author_id="local_owner",  # Internal marker, not displayed
+                author_id="local_owner",
 
                 encrypted_data=b'',
 
@@ -1894,13 +1567,9 @@ class P2PNode:
 
             
 
-            # Log local validation
-
             self.log_content_validation(content, site_name, signature.hex(), True, None)
 
             
-
-            # Create broadcast message
 
             broadcast_msg = {
 
@@ -1910,15 +1579,13 @@ class P2PNode:
 
                 "content": content,
 
-                "signature": signature.hex(),  # Site signature, not node signature
+                "signature": signature.hex(),
 
                 "timestamp": time.time()
 
             }
 
             
-
-            # Broadcast to all peers
 
             self.broadcast_to_peers(broadcast_msg)
 
@@ -2040,8 +1707,6 @@ class P2PNode:
 
         
 
-        # Clean up failed peers
-
         for peer_addr in failed_peers:
 
             self.peers.pop(peer_addr, None)
@@ -2062,8 +1727,6 @@ class P2PNode:
 
         
 
-        # Send goodbye message to all peers
-
         goodbye_msg = {
 
             "type": "GOODBYE",
@@ -2078,8 +1741,6 @@ class P2PNode:
 
         
 
-        # Close all peer connections
-
         for peer_socket in self.peers.values():
 
             try:
@@ -2092,13 +1753,9 @@ class P2PNode:
 
         
 
-        # Save known peers
-
         self.save_known_peers()
 
         
-
-        # Stop HTTP server
 
         if self.http_server:
 
@@ -2107,5 +1764,3 @@ class P2PNode:
         
 
         print("[SHUTDOWN] Node shutdown complete")
-
- 

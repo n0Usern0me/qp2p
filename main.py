@@ -26,7 +26,7 @@ from p2pqs.core.config import ConfigManager
 
 
 
-VERSION = "2.1"
+VERSION = "2.2"
 
 shutdown_event = threading.Event()
 

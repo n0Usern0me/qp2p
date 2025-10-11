@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 
 <html lang="en">
@@ -147,6 +146,70 @@
             border-radius: 5px;
 
             word-break: break-all;
+
+        }
+
+        .key-input {
+
+            width: 100%;
+
+            font-family: monospace;
+
+            font-size: 0.85em;
+
+            background: rgba(0,0,0,0.3);
+
+            color: #fff;
+
+            border: 2px solid rgba(255,255,255,0.3);
+
+            padding: 8px;
+
+            border-radius: 5px;
+
+            word-break: break-all;
+
+        }
+
+        .key-input:focus {
+
+            outline: none;
+
+            border-color: #ffc107;
+
+            background: rgba(0,0,0,0.4);
+
+        }
+
+        .key-input-inline {
+
+            font-family: monospace;
+
+            font-size: 0.85em;
+
+            background: rgba(0,0,0,0.3);
+
+            color: #dc3545;
+
+            border: 2px solid rgba(255,255,255,0.3);
+
+            padding: 4px 8px;
+
+            border-radius: 4px;
+
+            width: auto;
+
+            min-width: 200px;
+
+        }
+
+        .key-input-inline:focus {
+
+            outline: none;
+
+            border-color: #28a745;
+
+            color: #28a745;
 
         }
 
@@ -546,13 +609,13 @@
 
             <div class="key-section">
 
-                <div class="key-title">Site Keys (Same on all machines):</div>
+                <div class="key-title">Site Keys (Shared on all machines):</div>
 
                 <div style="margin-top: 10px;">
 
                     <strong style="color: #ffc107;">Dilithium Private:</strong>
 
-                    <div class="key-value" id="siteDilithiumPrivate">Generating...</div>
+                    <input type="text" class="key-input" id="siteDilithiumPrivate" placeholder="Loading...">
 
                 </div>
 
@@ -560,7 +623,7 @@
 
                     <strong style="color: #a8d5ff;">Dilithium Public:</strong>
 
-                    <div class="key-value" id="siteDilithiumPublic">Generating...</div>
+                    <input type="text" class="key-input" id="siteDilithiumPublic" placeholder="Loading...">
 
                 </div>
 
@@ -568,7 +631,7 @@
 
                     <strong style="color: #ffc107;">Falcon Private:</strong>
 
-                    <div class="key-value" id="siteFalconPrivate">Generating...</div>
+                    <input type="text" class="key-input" id="siteFalconPrivate" placeholder="Loading...">
 
                 </div>
 
@@ -576,7 +639,7 @@
 
                     <strong style="color: #a8d5ff;">Falcon Public:</strong>
 
-                    <div class="key-value" id="siteFalconPublic">Generating...</div>
+                    <input type="text" class="key-input" id="siteFalconPublic" placeholder="Loading...">
 
                 </div>
 
@@ -588,11 +651,11 @@
 
                 <div class="key-title">Your Individual Key:</div>
 
-                <div class="key-value" id="individualKeyDisplay">Not generated yet</div>
+                <input type="text" class="key-input" id="individualKeyDisplay" placeholder="Not generated yet">
 
                 <div style="margin-top: 8px; font-size: 0.9em; color: #ffc107;">
 
-                    Individual Private Key: <span id="privateKeyDisplay" style="color: #dc3545;">Not generated</span>
+                    Individual Private Key: <input type="text" class="key-input-inline" id="privateKeyDisplay" placeholder="Not generated">
 
                 </div>
 
@@ -670,45 +733,13 @@
 
         
 
-        // HARDCODED SITE KEYS - SAME ON ALL MACHINES
+        // Site keys loaded from API
 
-        const FIXED_SITE_KEYS = {
-
-            dilithium_private: 'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6',
-
-            dilithium_public: 'f1e2d3c4b5a6f7e8d9c0b1a2f3e4d5c6b7a8f9e0d1c2b3a4f5e6d7c8b9a0f1e2',
-
-            falcon_private: '1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2',
-
-            falcon_public: '9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c'
-
-        };
-
-        
+        let siteKeys = null;
 
         let individualPrivateKey = null;
 
         let individualPublicKeyHex = null;
-
-        let siteKeys = FIXED_SITE_KEYS;
-
-
-
-        function initializeSiteKeys() {
-
-            document.getElementById('siteDilithiumPrivate').textContent = siteKeys.dilithium_private;
-
-            document.getElementById('siteDilithiumPublic').textContent = siteKeys.dilithium_public;
-
-            document.getElementById('siteFalconPrivate').textContent = siteKeys.falcon_private;
-
-            document.getElementById('siteFalconPublic').textContent = siteKeys.falcon_public;
-
-            
-
-            console.log('[SITE-KEYS] Fixed hardcoded keys loaded - same on all machines');
-
-        }
 
 
 
@@ -790,11 +821,13 @@
 
                 try {
 
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                    const stored = JSON.stringify(data);
+
+                    console.log('[KEYS] Keys saved in memory');
 
                 } catch (e) {
 
-                    console.log('localStorage not available');
+                    console.log('[KEYS] Storage not available');
 
                 }
 
@@ -805,44 +838,6 @@
 
 
         function loadKeys() {
-
-            try {
-
-                const stored = localStorage.getItem(STORAGE_KEY);
-
-                if (stored) {
-
-                    const data = JSON.parse(stored);
-
-                    individualPrivateKey = data.private;
-
-                    individualPublicKeyHex = data.public;
-
-                    
-
-                    updateKeyDisplays();
-
-                    document.getElementById('sendBtn').disabled = false;
-
-                    document.getElementById('generateKeysBtn').textContent = 'Keys Loaded - Ready to Send';
-
-                    document.getElementById('generateKeysBtn').disabled = true;
-
-                    document.getElementById('generateKeysBtn').style.background = '#28a745';
-
-                    
-
-                    showAlert('Individual keys restored from storage', 'success');
-
-                    return true;
-
-                }
-
-            } catch (e) {
-
-                console.log('Could not load keys');
-
-            }
 
             return false;
 
@@ -860,7 +855,7 @@
 
             if (privateDisplay && individualPrivateKey) {
 
-                privateDisplay.textContent = individualPrivateKey;
+                privateDisplay.value = individualPrivateKey;
 
                 privateDisplay.style.color = '#28a745';
 
@@ -870,7 +865,7 @@
 
             if (individualDisplay && individualPublicKeyHex) {
 
-                individualDisplay.textContent = individualPublicKeyHex;
+                individualDisplay.value = individualPublicKeyHex;
 
             }
 
@@ -940,7 +935,7 @@
 
                 
 
-                showAlert('Key pair generated and saved', 'success');
+                showAlert('Key pair generated successfully', 'success');
 
             } catch (error) {
 
@@ -952,23 +947,149 @@
 
 
 
+        async function loadRealSiteKeys() {
+
+            try {
+
+                console.log('[KEYS] Loading real site keys from API...');
+
+                const response = await fetch(`${API_BASE}/api/site_keys?site=${SITE_NAME}`);
+
+                
+
+                if (!response.ok) {
+
+                    console.log('[KEYS] Site not found, creating with real crypto keys...');
+
+                    const createResponse = await fetch(`${API_BASE}/api/create_site`, {
+
+                        method: 'POST',
+
+                        headers: { 'Content-Type': 'application/json' },
+
+                        body: JSON.stringify({ site_name: SITE_NAME })
+
+                    });
+
+                    
+
+                    const createResult = await createResponse.json();
+
+                    
+
+                    if (!createResponse.ok) {
+
+                        throw new Error(createResult.error || 'Site creation failed');
+
+                    }
+
+                    
+
+                    siteKeys = {
+
+                        dilithium_private: createResult.dilithium_private,
+
+                        dilithium_public: createResult.dilithium_public,
+
+                        falcon_private: createResult.falcon_private,
+
+                        falcon_public: createResult.falcon_public
+
+                    };
+
+                    
+
+                    showAlert('Site created with real cryptographic keys', 'success');
+
+                } else {
+
+                    siteKeys = await response.json();
+
+                    showAlert('Real site keys loaded successfully', 'success');
+
+                }
+
+                
+
+                console.log('[KEYS] ✓ Real cryptographic keys loaded');
+
+                console.log('[KEYS] Dilithium Public:', siteKeys.dilithium_public.substring(0, 40) + '...');
+
+                
+
+                initializeSiteKeys();
+
+                return true;
+
+                
+
+            } catch (error) {
+
+                console.error('[KEYS] Failed to load real keys:', error);
+
+                showAlert('Failed to load site keys: ' + error.message, 'error');
+
+                return false;
+
+            }
+
+        }
+
+
+
+        function initializeSiteKeys() {
+
+            if (!siteKeys) {
+
+                console.error('[KEYS] No site keys available');
+
+                return;
+
+            }
+
+            
+
+            document.getElementById('siteDilithiumPrivate').value = siteKeys.dilithium_private;
+
+            document.getElementById('siteDilithiumPublic').value = siteKeys.dilithium_public;
+
+            document.getElementById('siteFalconPrivate').value = siteKeys.falcon_private;
+
+            document.getElementById('siteFalconPublic').value = siteKeys.falcon_public;
+
+            
+
+            console.log('[SITE-KEYS] Real cryptographic keys displayed');
+
+        }
+
+
+
         async function ensureSiteExists() {
 
             try {
 
                 const response = await fetch(`${API_BASE}/api/sites`);
 
+                if (!response.ok) {
+
+                    throw new Error('Failed to fetch sites');
+
+                }
+
+                
+
                 const sites = await response.json();
 
-                
-
-                const siteExists = sites.some(s => s.site_name === SITE_NAME);
+                const existingSite = sites.find(s => s.site_name === SITE_NAME);
 
                 
 
-                if (siteExists) {
+                if (existingSite) {
 
-                    document.getElementById('siteStatus').textContent = 'Active';
+                    document.getElementById('siteStatus').textContent = 'Active (Verified)';
+
+                    console.log('[SITE] Site exists with real keys');
 
                     return true;
 
@@ -976,49 +1097,15 @@
 
                 
 
-                // Create site with deterministic keys
+                document.getElementById('siteStatus').textContent = 'Ready';
 
-                const createResponse = await fetch(`${API_BASE}/api/create_site`, {
-
-                    method: 'POST',
-
-                    headers: { 'Content-Type': 'application/json' },
-
-                    body: JSON.stringify({
-
-                        site_name: SITE_NAME,
-
-                        falcon_private: siteKeys.falcon_private,
-
-                        falcon_public: siteKeys.falcon_public,
-
-                        dilithium_private: siteKeys.dilithium_private,
-
-                        dilithium_public: siteKeys.dilithium_public
-
-                    })
-
-                });
+                return true;
 
                 
-
-                if (createResponse.ok) {
-
-                    document.getElementById('siteStatus').textContent = 'Created';
-
-                    showAlert('Site initialized with deterministic keys', 'success');
-
-                    return true;
-
-                } else {
-
-                    document.getElementById('siteStatus').textContent = 'Error';
-
-                    return false;
-
-                }
 
             } catch (error) {
+
+                console.error('[SITE] Error:', error);
 
                 document.getElementById('siteStatus').textContent = 'Error';
 
@@ -1030,7 +1117,7 @@
 
         }
 
-
+        
 
         async function sendEncryptedMessage(message) {
 
@@ -1043,6 +1130,14 @@
             
 
             try {
+
+                if (!siteKeys || !siteKeys.dilithium_private) {
+
+                    throw new Error('Site keys not loaded');
+
+                }
+
+                
 
                 const encrypted1 = encryptMessage(message, individualPrivateKey);
 
@@ -1098,7 +1193,9 @@
 
                 } else {
 
-                    throw new Error('Broadcast failed');
+                    const error = await response.json();
+
+                    throw new Error(error.error || 'Broadcast failed');
 
                 }
 
@@ -1150,13 +1247,15 @@
 
             try {
 
-                // Step 1: Decrypt with site private key (deterministic)
+                if (!siteKeys || !siteKeys.dilithium_private) {
 
-                const decrypted1 = decryptMessage(encryptedData, siteKeys.dilithium_private);
+                    throw new Error('Site keys not loaded');
+
+                }
 
                 
 
-                // Step 2: Decrypt with user-provided individual key
+                const decrypted1 = decryptMessage(encryptedData, siteKeys.dilithium_private);
 
                 const finalMessage = decryptMessage(decrypted1, userKey);
 
@@ -1254,7 +1353,7 @@
 
                                         <small style="display: block; margin-top: 5px; color: #666;">
 
-                                            Site key is used automatically (same on all machines)
+                                            Site key is used automatically (shared on all machines)
 
                                         </small>
 
@@ -1400,29 +1499,25 @@
 
         async function init() {
 
-            // Generate deterministic site keys first
-
-            await initializeSiteKeys();
-
-            
-
             const apiOk = await testAPIConnection();
 
             if (!apiOk) return;
 
             
 
-            await ensureSiteExists();
-
-            
-
-            const keysLoaded = loadKeys();
+            const keysLoaded = await loadRealSiteKeys();
 
             if (!keysLoaded) {
 
-                console.log('No stored keys found');
+                showAlert('Failed to load site keys - check API connection', 'error');
+
+                return;
 
             }
+
+            
+
+            await ensureSiteExists();
 
             
 
@@ -1457,5 +1552,3 @@
 </body>
 
 </html>
-
-

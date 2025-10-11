@@ -1,4 +1,5 @@
 
+
 import os
 
 import hashlib
@@ -179,7 +180,7 @@ class CryptoManager:
 
         
 
-      
+        # Create content signature with site-specific context
 
         message_hash = hashlib.sha3_256(data.encode("utf-8")).digest()
 
@@ -199,12 +200,13 @@ class CryptoManager:
 
         try:
 
-      
+            # Verify site content signature
 
             message_hash = hashlib.sha3_256(data.encode("utf-8")).digest()
 
             
 
+            # Derive the expected private key from public key for verification
 
             derived_private = hashlib.scrypt(dilithium_public, salt=b"dilithium", n=16384, r=8, p=1, dklen=128)
 
@@ -402,7 +404,7 @@ class CryptoManager:
 
                 
 
-               
+                # Test hex decoding
 
                 try:
 
@@ -416,7 +418,7 @@ class CryptoManager:
 
             
 
-          
+            # Verify key pair consistency
 
             falcon_private = bytes.fromhex(keys_data["falcon_private"])
 
@@ -474,7 +476,7 @@ class CryptoManager:
 
             
 
-      
+            # Generate test site keys
 
             site_keys = self.generate_site_keypair()
 
@@ -486,7 +488,7 @@ class CryptoManager:
 
             
 
-           
+            # Create signature with site private key
 
             site_private_key = bytes.fromhex(site_keys["dilithium_private"])
 
@@ -502,7 +504,7 @@ class CryptoManager:
 
             
 
-       
+            # Verify signature with site public key
 
             site_public_key = bytes.fromhex(site_keys["dilithium_public"])
 

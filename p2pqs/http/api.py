@@ -1,6 +1,4 @@
 
-
-
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 from urllib.parse import parse_qs, urlparse
@@ -17,7 +15,7 @@ import time
 
 class APIHandler(BaseHTTPRequestHandler):
 
-   
+    # Static storage for P2P node
 
     p2p_node = None
 
@@ -683,7 +681,7 @@ class APIHandler(BaseHTTPRequestHandler):
 
             
 
-         
+            # Filter based on parameters
 
             if valid_only:
 
@@ -695,7 +693,7 @@ class APIHandler(BaseHTTPRequestHandler):
 
             
 
-           
+            # Apply limit
 
             if limit > 0:
 
@@ -703,7 +701,7 @@ class APIHandler(BaseHTTPRequestHandler):
 
 
 
-       
+            # Format timestamps
 
             formatted_log = []
 
@@ -797,7 +795,7 @@ class APIHandler(BaseHTTPRequestHandler):
 
 
 
-     
+            # Get peer counts
 
             if hasattr(self.p2p_node, 'peers'):
 
@@ -811,8 +809,7 @@ class APIHandler(BaseHTTPRequestHandler):
 
 
 
-         
-
+            # Calculate network health
 
             peer_ratio = stats["connected_peers"] / stats["max_peers"]
 
@@ -834,7 +831,7 @@ class APIHandler(BaseHTTPRequestHandler):
 
 
 
-      
+            # Content statistics
 
             if hasattr(self.p2p_node, 'get_content_validation_log'):
 
@@ -1050,6 +1047,7 @@ class APIHandler(BaseHTTPRequestHandler):
 
 
 
+            # CORRECTION: Utiliser la nouvelle méthode broadcast_content_to_network
 
             success = self.p2p_node.broadcast_content_to_network(site_name, content)
 
@@ -1137,7 +1135,7 @@ class APIHandler(BaseHTTPRequestHandler):
 
 
 
-    
+    # Include all other existing handlers from the original API
 
     def _handle_get_sites(self):
 
@@ -1373,7 +1371,7 @@ class APIHandler(BaseHTTPRequestHandler):
 
     def _handle_create_site(self, data):
 
-        """Handle site creation"""
+        """Handle site creation - MODIFIED to prevent duplicate creation"""
 
         site_name = data.get("site") or data.get("site_name")
 
@@ -1395,55 +1393,129 @@ class APIHandler(BaseHTTPRequestHandler):
 
 
 
-          
+            # Check if custom keys are provided
+
+            custom_keys_provided = all([
+
+                data.get("falcon_private"),
+
+                data.get("falcon_public"),
+
+                data.get("dilithium_private"),
+
+                data.get("dilithium_public")
+
+            ])
+
+            
+
+            # Check if site already exists in database
 
             if hasattr(self.p2p_node, 'database'):
 
-                existing_sites = self.p2p_node.database.get_sites()
+                existing_site = self.p2p_node.database.get_site_keys(site_name)
 
-                if existing_sites:
+                
 
-                    for site in existing_sites:
+                if existing_site:
 
-                        if site.get('site_name') == site_name:
+                    # Site exists
 
-                            self._send_json_response({"error": "Site already exists"}, 409)
+                    if not custom_keys_provided:
 
-                            return
+                        # No custom keys provided - return existing site info without regenerating
+
+                        print(f"[API] Site '{site_name}' already exists - returning existing keys")
+
+                        response = {
+
+                            "success": True,
+
+                            "site_name": site_name,
+
+                            "message": "Site already exists",
+
+                            "existing_site": True,
+
+                            "falcon_private": existing_site.get("falcon_private"),
+
+                            "falcon_public": existing_site.get("falcon_public"),
+
+                            "dilithium_private": existing_site.get("dilithium_private"),
+
+                            "dilithium_public": existing_site.get("dilithium_public")
+
+                        }
+
+                        self._send_json_response(response)
+
+                        return
+
+                    else:
+
+                        # Custom keys provided - this is intentional override
+
+                        print(f"[API] Site '{site_name}' exists but custom keys provided - overwriting")
 
             
-
 
             keys_data = {}
 
-            if hasattr(self.p2p_node, 'crypto') and self.p2p_node.crypto:
+            
 
-                try:
+            if custom_keys_provided:
 
-                    falcon_private, falcon_public = self.p2p_node.crypto.generate_falcon_keypair()
+                # Use provided custom keys (for shared anonymous chat)
 
-                    dilithium_private, dilithium_public = self.p2p_node.crypto.generate_dilithium_keypair()
+                print(f"[API] Using custom keys for site '{site_name}'")
 
-                    
+                keys_data = {
 
-                    keys_data = {
+                    "falcon_private": data.get("falcon_private"),
 
-                        "falcon_private": falcon_private.hex(),
+                    "falcon_public": data.get("falcon_public"),
 
-                        "falcon_public": falcon_public.hex(),
+                    "dilithium_private": data.get("dilithium_private"),
 
-                        "dilithium_private": dilithium_private.hex(),
+                    "dilithium_public": data.get("dilithium_public")
 
-                        "dilithium_public": dilithium_public.hex()
+                }
 
-                    }
+            else:
 
-                except Exception as e:
+                # Generate new random keys (original behavior)
 
-                    print(f"[API] Key generation error: {e}")
+                print(f"[API] Generating new keys for site '{site_name}'")
+
+                if hasattr(self.p2p_node, 'crypto') and self.p2p_node.crypto:
+
+                    try:
+
+                        falcon_private, falcon_public = self.p2p_node.crypto.generate_falcon_keypair()
+
+                        dilithium_private, dilithium_public = self.p2p_node.crypto.generate_dilithium_keypair()
+
+                        
+
+                        keys_data = {
+
+                            "falcon_private": falcon_private.hex(),
+
+                            "falcon_public": falcon_public.hex(),
+
+                            "dilithium_private": dilithium_private.hex(),
+
+                            "dilithium_public": dilithium_public.hex()
+
+                        }
+
+                    except Exception as e:
+
+                        print(f"[API] Key generation error: {e}")
 
             
 
+            # Get user ID
 
             user_id = "unknown"
 
@@ -1453,6 +1525,7 @@ class APIHandler(BaseHTTPRequestHandler):
 
             
 
+            # Store site
 
             success = False
 
@@ -1480,11 +1553,17 @@ class APIHandler(BaseHTTPRequestHandler):
 
                     "owner": user_id,
 
-                    "message": "Site created successfully"
+                    "message": "Site created successfully",
+
+                    "custom_keys_used": custom_keys_provided,
+
+                    "new_site": True
 
                 }
 
                 response.update(keys_data)
+
+                print(f"[API] ✓ Site '{site_name}' created (custom_keys={custom_keys_provided})")
 
                 self._send_json_response(response)
 
@@ -1498,9 +1577,17 @@ class APIHandler(BaseHTTPRequestHandler):
 
             print(f"[API] Site creation error: {e}")
 
+            import traceback
+
             traceback.print_exc()
 
             self._send_json_response({"error": f"Site creation error: {str(e)}"}, 500)
+
+                    
+
+              
+
+            
 
 
 
@@ -1532,6 +1619,7 @@ class APIHandler(BaseHTTPRequestHandler):
 
 
 
+            # CORRECTION: Utiliser broadcast_content_to_network au lieu de store simple
 
             success = self.p2p_node.broadcast_content_to_network(site_name, content)
 
@@ -1621,7 +1709,7 @@ class APIHandler(BaseHTTPRequestHandler):
 
             
 
-           
+            # Calculate tax (2%)
 
             tax_rate = 0.02
 
@@ -1629,8 +1717,7 @@ class APIHandler(BaseHTTPRequestHandler):
 
             
 
-            
-
+            # Check tax confirmations
 
             if not sender_tax_paid or not receiver_tax_paid:
 
@@ -1676,12 +1763,13 @@ class APIHandler(BaseHTTPRequestHandler):
 
             
 
+            # Process transaction
 
             net_amount = amount - tax_amount
 
             
 
-           
+            # Generate transaction ID
 
             transaction_id = f"tx_{'unknown'}_{int(datetime.datetime.now().timestamp())}"
 
@@ -1807,5 +1895,3 @@ def start_api_server(node, host="127.0.0.1", port=5001, localhost_only=True):
         print(f"[API] Server startup error: {e}")
 
         raise
-
- 

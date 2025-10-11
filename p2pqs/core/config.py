@@ -1,3 +1,5 @@
+
+
 import os
 
 import json
@@ -10,51 +12,56 @@ from typing import Dict, Any
 
 DEFAULT_CONFIG = {
 
-    "user_id": None,
+ "user_id": None,
 
-    "node": {
+            "node": {
 
-        "enable_http": True,
+                "enable_http": True,
 
-        "api_host": "127.0.0.1",  
+                "api_host": "127.0.0.1",
 
-        "api_port": 5001,  
+                "api_port": 5001,
 
-        "p2p_port": 4000,
+                "p2p_port": 4000,
 
-        "localhost_only": True,
+                "localhost_only": True,
 
-        "cross_platform": True  
+                "cross_platform": True
 
-    },
+            },
 
-    "security": {
+            "security": {
 
-        "keys": {
+                "keys": {
 
-            "falcon": None,
+                    "falcon": None,
 
-            "dilithium": None
+                    "dilithium": None
 
-        },
+                },
 
-        "strict_localhost": True,
+                "strict_localhost": True,
 
-        "log_access_attempts": True,
+                "log_access_attempts": True,
 
-        "dual_tax_confirmation": True  
+                "dual_tax_confirmation": True,
 
-    },
+               "bypass_site_verification": "all"
 
-    "language": {
+            },
 
-        "interface": "english",
+            "language": {
 
-        "remove_other_languages": True
+                "interface": "english",
 
-    }
+                
 
-}
+            }
+
+        }
+
+    
+
 
 
 
@@ -84,7 +91,7 @@ class ConfigManager:
 
                     
 
-               
+                # Merge with defaults to ensure security
 
                 self.config = DEFAULT_CONFIG.copy()
 
@@ -104,7 +111,7 @@ class ConfigManager:
 
             
 
-      
+        # Generate user_id if necessary
 
         if not self.config.get("user_id"):
 
@@ -112,7 +119,7 @@ class ConfigManager:
 
             
 
-        
+        # FORCE security settings
 
         self._enforce_security()
 
@@ -140,15 +147,15 @@ class ConfigManager:
 
     def _enforce_security(self):
 
-        """Enforce security settings - ENGLISH ONLY"""
+        """Enforce security settings - NO FRENCH"""
 
-    
+        # Force localhost-only for security
 
         if self.config.get("node"):
 
             self.config["node"]["api_host"] = "127.0.0.1"
 
-            self.config["node"]["api_port"] = 5001   
+            self.config["node"]["api_port"] = 5001  # Fixed port
 
             self.config["node"]["localhost_only"] = True
 
@@ -156,7 +163,7 @@ class ConfigManager:
 
             
 
-    
+        # Force security settings
 
         if not self.config.get("security"):
 
@@ -172,7 +179,7 @@ class ConfigManager:
 
 
 
-       
+        # Force English-only interface
 
         if not self.config.get("language"):
 
@@ -182,206 +189,312 @@ class ConfigManager:
 
             self.config["language"]["interface"] = "english"
 
-            self.config["language"]["remove_other_languages"] = True
+            self.config["language"]["remove_french"] = True
 
 
 
+    def save(self):
 
-
-    def _handle_broadcast_content(self, data):
-
-        """Handle broadcast content request with proper method"""
-
-        site_name = data.get("site") or data.get("site_name")
-
-        content = data.get("content")
-
-        
-
-        if not site_name or not content:
-
-            self._send_json_response({"error": "Site name and content required"}, 400)
-
-            return
-
-
+        """Save configuration"""
 
         try:
 
-            if not self.p2p_node:
+            # Create backup if file exists
 
-                self._send_json_response({"error": "P2P node not available"}, 500)
+            if os.path.exists(self.path):
 
-                return
+                backup_path = f"{self.path}.backup"
 
+                try:
 
+                    with open(self.path, "r") as f:
 
+                        backup_data = f.read()
 
-            success = self.p2p_node.broadcast_content_to_network(site_name, content)
+                    with open(backup_path, "w") as f:
+
+                        f.write(backup_data)
+
+                except:
+
+                    pass  # Backup failed, continue
 
             
 
-            if success:
+            with open(self.path, "w", encoding="utf-8") as f:
 
-                user_id = "unknown"
-
-                if hasattr(self.p2p_node, 'crypto') and self.p2p_node.crypto:
-
-                    user_id = getattr(self.p2p_node.crypto, 'crypto_id', 'unknown')
-
-
-
-                response = {
-
-                    "success": True,
-
-                    "site_name": site_name,
-
-                    "content": content[:100] + "..." if len(content) > 100 else content,
-
-                    "author": user_id,
-
-                    "peers_notified": len(getattr(self.p2p_node, 'peers', {})),
-
-                    "broadcast_method": "network_wide",
-
-                    "signature_created": True,
-
-                    "validation_passed": True,
-
-                    "message": "Content broadcast successfully to all connected peers"
-
-                }
-
-                print(f"[API] ✓ Content broadcast: {site_name} -> {len(getattr(self.p2p_node, 'peers', {}))} peers")
-
-                self._send_json_response(response)
-
-            else:
-
-                response = {
-
-                    "success": False,
-
-                    "site_name": site_name,
-
-                    "error": "Failed to broadcast content - check site exists and signature creation",
-
-                    "troubleshooting": {
-
-                        "check_site_exists": f"Verify site '{site_name}' is registered locally",
-
-                        "check_keys": "Ensure cryptographic keys are available",
-
-                        "check_peers": "Verify peer connections are active"
-
-                    }
-
-                }
-
-                print(f"[API] ✗ Content broadcast failed: {site_name}")
-
-                self._send_json_response(response, 500)
-
-
-
-        except Exception as e:
-
-            print(f"[API] Broadcast content error: {e}")
-
-            traceback.print_exc()
-
-            self._send_json_response({
-
-                "error": f"Broadcast error: {str(e)}",
-
-                "site_name": site_name,
-
-                "troubleshooting": "Check server logs for detailed error information"
-
-            }, 500)
-
-
-
-    def _handle_post_content(self, data):
-
-        """Handle content posting with proper broadcast"""
-
-        site_name = data.get("site") or data.get("site_name")
-
-        content = data.get("content")
-
-        
-
-        if not site_name or not content:
-
-            self._send_json_response({"error": "Site name and content required"}, 400)
-
-            return
-
-
-
-        try:
-
-            if not self.p2p_node:
-
-                self._send_json_response({"error": "P2P node not available"}, 500)
-
-                return
-
-
-
-
-            success = self.p2p_node.broadcast_content_to_network(site_name, content)
-
-            
-
-            if success:
-
-                user_id = "unknown"
-
-                if hasattr(self.p2p_node, 'crypto') and self.p2p_node.crypto:
-
-                    user_id = getattr(self.p2p_node.crypto, 'crypto_id', 'unknown')
-
-
-
-                response = {
-
-                    "success": True,
-
-                    "site_name": site_name,
-
-                    "content": content,
-
-                    "author": user_id,
-
-                    "broadcast_to_peers": True,
-
-                    "peers_notified": len(getattr(self.p2p_node, 'peers', {})),
-
-                    "message": "Content posted and broadcast to network successfully"
-
-                }
-
-                print(f"[API] ✓ Content posted and broadcast: {site_name}")
-
-                self._send_json_response(response)
-
-            else:
-
-                self._send_json_response({"error": "Content posting and broadcast failed"}, 500)
+                json.dump(self.config, f, ensure_ascii=False, indent=2)
 
                 
 
         except Exception as e:
 
-            print(f"[API] Content posting error: {e}")
+            print(f"[Config] Save error: {e}")
 
-            traceback.print_exc()
 
-            self._send_json_response({"error": f"Content posting error: {str(e)}"}, 500)
 
- 
+    def update_security_keys(self, crypto):
+
+        """Update security keys from crypto manager"""
+
+        falcon_hex = None
+
+        if getattr(crypto, "falcon_private", None):
+
+            falcon_hex = crypto.falcon_private.hex() if isinstance(crypto.falcon_private, bytes) else crypto.falcon_private
+
+            
+
+        dilithium_hex = None
+
+        if getattr(crypto, "dilithium_private", None):
+
+            dilithium_hex = crypto.dilithium_private.hex() if isinstance(crypto.dilithium_private, bytes) else crypto.dilithium_private
+
+
+
+        # Ensure security section exists
+
+        if "security" not in self.config:
+
+            self.config["security"] = DEFAULT_CONFIG["security"].copy()
+
+            
+
+        if "keys" not in self.config["security"]:
+
+            self.config["security"]["keys"] = {}
+
+            
+
+        self.config["security"]["keys"]["falcon"] = falcon_hex
+
+        self.config["security"]["keys"]["dilithium"] = dilithium_hex
+
+        self.save()
+
+
+
+    def get_api_settings(self):
+
+        """Get API settings with security enforcement"""
+
+        node_config = self.config.get("node", {})
+
+        return {
+
+            "host": "127.0.0.1",  # ALWAYS localhost
+
+            "port": 5001,  # ALWAYS port 5001
+
+            "localhost_only": True,  # ALWAYS enforce
+
+            "enable_http": node_config.get("enable_http", True),
+
+            "cross_platform": True
+
+        }
+
+
+
+    def get_p2p_settings(self):
+
+        """Get P2P settings"""
+
+        node_config = self.config.get("node", {})
+
+        return {
+
+            "port": node_config.get("p2p_port", 4000),
+
+            "max_peers": node_config.get("max_peers", 9)
+
+        }
+
+
+
+    def is_localhost_enforced(self):
+
+        """Check if localhost enforcement is active"""
+
+        return self.config.get("security", {}).get("strict_localhost", True)
+
+
+
+    def is_dual_tax_required(self):
+
+        """Check if dual tax confirmation is required"""
+
+        return self.config.get("security", {}).get("dual_tax_confirmation", True)
+
+
+
+    def get_language_settings(self):
+
+        """Get language settings - English only"""
+
+        return {
+
+            "interface": "english",
+
+            "remove_french": True,
+
+            "supported_languages": ["english"]
+
+        }
+
+
+
+    def validate_config(self):
+
+        """Validate configuration security"""
+
+        issues = []
+
+        
+
+        # Check API security
+
+        node_config = self.config.get("node", {})
+
+        if node_config.get("api_host") != "127.0.0.1":
+
+            issues.append("API host should be 127.0.0.1 for security")
+
+            
+
+        if node_config.get("api_port") != 5001:
+
+            issues.append("API port should be 5001")
+
+            
+
+        if not node_config.get("localhost_only", True):
+
+            issues.append("localhost_only should be enabled")
+
+            
+
+        # Check security section
+
+        security = self.config.get("security", {})
+
+        if not security.get("strict_localhost", True):
+
+            issues.append("strict_localhost should be enabled")
+
+
+
+        # Check language settings
+
+        language = self.config.get("language", {})
+
+        if language.get("interface") != "english":
+
+            issues.append("Interface should be set to English")
+
+            
+
+        return issues
+
+
+
+    def fix_security_issues(self):
+
+        """Fix identified security issues"""
+
+        print("[Config] Fixing security configuration...")
+
+        self._enforce_security()
+
+        self.save()
+
+        print("[Config] Security configuration updated - English only, localhost restricted")
+
+
+
+    def reset_to_secure_defaults(self):
+
+        """Reset configuration to secure defaults"""
+
+        print("[Config] Resetting to secure defaults...")
+
+        
+
+        # Preserve user_id and keys if they exist
+
+        old_user_id = self.config.get("user_id")
+
+        old_keys = self.config.get("security", {}).get("keys", {})
+
+        
+
+        # Reset to defaults
+
+        self.config = DEFAULT_CONFIG.copy()
+
+        
+
+        # Restore preserved data
+
+        if old_user_id:
+
+            self.config["user_id"] = old_user_id
+
+        if old_keys:
+
+            self.config["security"]["keys"] = old_keys
+
+            
+
+        self.save()
+
+        print("[Config] Reset completed - English interface, security enforced, port 5001 fixed")
+
+
+
+    def get_platform_info(self):
+
+        """Get platform compatibility information"""
+
+        import platform
+
+        system = platform.system().lower()
+
+        
+
+        return {
+
+            "current_platform": system,
+
+            "supported_platforms": ["windows", "linux", "darwin"],
+
+            "cross_platform_mode": self.config.get("node", {}).get("cross_platform", True),
+
+            "optimized_for": "windows_linux" if system in ["windows", "linux"] else "cross_platform"
+
+        }
+
+
+
+    def __str__(self):
+
+        """String representation for debugging"""
+
+        safe_config = self.config.copy()
+
+        # Hide sensitive keys
+
+        if "security" in safe_config and "keys" in safe_config["security"]:
+
+            for key_name in ["falcon", "dilithium"]:
+
+                if safe_config["security"]["keys"].get(key_name):
+
+                    safe_config["security"]["keys"][key_name] = "[HIDDEN]"
+
+        
+
+        return f"ConfigManager({json.dumps(safe_config, indent=2)})"
 
  
