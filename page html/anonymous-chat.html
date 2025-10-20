@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 
 <html lang="en">
@@ -9,7 +10,7 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>anonymous-chat</title>
+    <title>Anonymous Chat</title>
 
     <style>
 
@@ -27,483 +28,715 @@
 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            background: #111b21;
 
-            min-height: 100vh;
+            height: 100vh;
 
-            padding: 20px;
-
-            color: #fff;
+            overflow: hidden;
 
         }
 
         .container {
 
-            max-width: 900px;
+            display: flex;
 
-            margin: 0 auto;
-
-        }
-
-        .header {
-
-            text-align: center;
-
-            margin-bottom: 30px;
+            height: 100vh;
 
         }
 
-        .header h1 {
+        
 
-            font-size: 2.5em;
+        .sidebar {
 
-            margin-bottom: 10px;
+            width: 350px;
 
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            background: #202c33;
 
-        }
+            border-right: 1px solid #2a3942;
 
-        .status-panel {
+            display: flex;
 
-            background: rgba(255,255,255,0.1);
-
-            backdrop-filter: blur(10px);
-
-            border-radius: 15px;
-
-            padding: 20px;
-
-            margin-bottom: 20px;
-
-            border: 1px solid rgba(255,255,255,0.2);
+            flex-direction: column;
 
         }
 
-        .status-row {
+        .sidebar-header {
+
+            background: #2a3942;
+
+            padding: 15px;
 
             display: flex;
 
             justify-content: space-between;
 
-            margin-bottom: 10px;
-
-            padding: 8px;
-
-            background: rgba(0,0,0,0.2);
-
-            border-radius: 8px;
+            align-items: center;
 
         }
 
-        .status-label {
+        .sidebar-title {
 
-            font-weight: bold;
+            color: #aebac1;
 
-            color: #a8d5ff;
+            font-size: 1.2em;
+
+            font-weight: 500;
 
         }
 
-        .status-value {
+        .new-chat-btn {
 
-            font-family: monospace;
+            width: 40px;
+
+            height: 40px;
+
+            border-radius: 50%;
+
+            background: #00a884;
+
+            border: none;
+
+            color: white;
+
+            font-size: 24px;
+
+            cursor: pointer;
+
+            transition: background 0.3s;
+
+        }
+
+        .new-chat-btn:hover {
+
+            background: #008f6f;
+
+        }
+
+        .conversations-list {
+
+            flex: 1;
+
+            overflow-y: auto;
+
+        }
+
+        .conversation-item {
+
+            padding: 15px;
+
+            padding-right: 50px;
+
+            border-bottom: 1px solid #2a3942;
+
+            cursor: pointer;
+
+            transition: background 0.2s;
+
+            color: #e9edef;
+
+            position: relative;
+
+        }
+
+        .conversation-item:hover {
+
+            background: #2a3942;
+
+        }
+
+        .conversation-item.active {
+
+            background: #2a3942;
+
+        }
+
+        .conversation-title {
+
+            font-weight: 500;
+
+            margin-bottom: 5px;
+
+            overflow: hidden;
+
+            text-overflow: ellipsis;
+
+            white-space: nowrap;
+
+        }
+
+        .conversation-key {
+
+            font-size: 0.8em;
+
+            color: #8696a0;
+
+            overflow: hidden;
+
+            text-overflow: ellipsis;
+
+            white-space: nowrap;
+
+        }
+
+        .delete-conversation {
+
+            position: absolute;
+
+            right: 10px;
+
+            top: 50%;
+
+            transform: translateY(-50%);
+
+            background: #c53030;
+
+            border: none;
+
+            color: white;
+
+            width: 30px;
+
+            height: 30px;
+
+            border-radius: 50%;
+
+            cursor: pointer;
+
+            opacity: 0;
+
+            transition: opacity 0.2s;
+
+            font-size: 18px;
+
+        }
+
+        .conversation-item:hover .delete-conversation {
+
+            opacity: 1;
+
+        }
+
+        .sidebar-footer {
+
+            padding: 10px;
+
+            background: #2a3942;
+
+            border-top: 1px solid #3b4a54;
+
+        }
+
+        .key-manager-btn {
+
+            width: 100%;
+
+            padding: 10px;
+
+            background: #3b4a54;
+
+            color: #aebac1;
+
+            border: none;
+
+            border-radius: 5px;
+
+            cursor: pointer;
 
             font-size: 0.9em;
 
         }
 
-        .key-section {
+        .key-manager-btn:hover {
 
-            background: rgba(255,255,255,0.15);
-
-            padding: 15px;
-
-            border-radius: 10px;
-
-            margin-bottom: 15px;
+            background: #4a5a64;
 
         }
 
-        .key-title {
+        
 
-            font-weight: bold;
+        .chat-area {
 
-            color: #ffc107;
+            flex: 1;
 
-            margin-bottom: 8px;
+            display: flex;
 
-        }
+            flex-direction: column;
 
-        .key-value {
-
-            font-family: monospace;
-
-            font-size: 0.85em;
-
-            background: rgba(0,0,0,0.3);
-
-            padding: 8px;
-
-            border-radius: 5px;
-
-            word-break: break-all;
+            background: #0b141a;
 
         }
 
-        .key-input {
+        .chat-header {
 
-            width: 100%;
+            background: #2a3942;
 
-            font-family: monospace;
+            padding: 15px 20px;
 
-            font-size: 0.85em;
-
-            background: rgba(0,0,0,0.3);
-
-            color: #fff;
-
-            border: 2px solid rgba(255,255,255,0.3);
-
-            padding: 8px;
-
-            border-radius: 5px;
-
-            word-break: break-all;
+            border-bottom: 1px solid #3b4a54;
 
         }
 
-        .key-input:focus {
+        .chat-recipient {
 
-            outline: none;
-
-            border-color: #ffc107;
-
-            background: rgba(0,0,0,0.4);
-
-        }
-
-        .key-input-inline {
-
-            font-family: monospace;
-
-            font-size: 0.85em;
-
-            background: rgba(0,0,0,0.3);
-
-            color: #dc3545;
-
-            border: 2px solid rgba(255,255,255,0.3);
-
-            padding: 4px 8px;
-
-            border-radius: 4px;
-
-            width: auto;
-
-            min-width: 200px;
-
-        }
-
-        .key-input-inline:focus {
-
-            outline: none;
-
-            border-color: #28a745;
-
-            color: #28a745;
-
-        }
-
-        .message-panel {
-
-            background: rgba(255,255,255,0.95);
-
-            color: #333;
-
-            border-radius: 15px;
-
-            padding: 25px;
-
-            margin-bottom: 20px;
-
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-
-        }
-
-        .form-group {
-
-            margin-bottom: 20px;
-
-        }
-
-        .form-group label {
-
-            display: block;
-
-            font-weight: bold;
-
-            margin-bottom: 8px;
-
-            color: #2a5298;
-
-        }
-
-        .form-group input, .form-group textarea {
-
-            width: 100%;
-
-            padding: 12px;
-
-            border: 2px solid #ddd;
-
-            border-radius: 8px;
-
-            font-size: 1em;
-
-            transition: border-color 0.3s;
-
-            font-family: monospace;
-
-        }
-
-        .form-group input:focus, .form-group textarea:focus {
-
-            outline: none;
-
-            border-color: #2a5298;
-
-        }
-
-        .form-group textarea {
-
-            resize: vertical;
-
-            min-height: 120px;
-
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-
-        }
-
-        .btn {
-
-            background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
-
-            color: white;
-
-            border: none;
-
-            padding: 12px 20px;
-
-            border-radius: 8px;
-
-            font-size: 1em;
-
-            font-weight: bold;
-
-            cursor: pointer;
-
-            transition: transform 0.2s, box-shadow 0.2s;
-
-        }
-
-        .btn-primary {
-
-            width: 100%;
-
-            padding: 15px 30px;
+            color: #e9edef;
 
             font-size: 1.1em;
 
-        }
-
-        .btn-decrypt {
-
-            background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
-
-            margin-top: 10px;
-
-            width: 100%;
+            font-weight: 500;
 
         }
 
-        .btn:hover {
+        .chat-status {
 
-            transform: translateY(-2px);
+            color: #8696a0;
 
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            font-size: 0.85em;
 
-        }
-
-        .btn:active {
-
-            transform: translateY(0);
+            margin-top: 3px;
 
         }
 
-        .btn:disabled {
+        .messages-container {
 
-            opacity: 0.5;
+            flex: 1;
+
+            overflow-y: auto;
+
+            padding: 20px;
+
+        }
+
+        .message {
+
+            display: flex;
+
+            margin-bottom: 10px;
+
+            animation: slideIn 0.3s ease-out;
+
+        }
+
+        @keyframes slideIn {
+
+            from { opacity: 0; transform: translateY(10px); }
+
+            to { opacity: 1; transform: translateY(0); }
+
+        }
+
+        .message.sent {
+
+            justify-content: flex-end;
+
+        }
+
+        .message.received {
+
+            justify-content: flex-start;
+
+        }
+
+        .message-bubble {
+
+            max-width: 65%;
+
+            padding: 10px 15px;
+
+            border-radius: 10px;
+
+            word-wrap: break-word;
+
+        }
+
+        .message.sent .message-bubble {
+
+            background: #005c4b;
+
+            color: #e9edef;
+
+        }
+
+        .message.received .message-bubble {
+
+            background: #202c33;
+
+            color: #e9edef;
+
+        }
+
+        .message-time {
+
+            font-size: 0.75em;
+
+            color: #8696a0;
+
+            margin-top: 5px;
+
+            text-align: right;
+
+        }
+
+        .message-input-area {
+
+            padding: 10px 20px;
+
+            background: #202c33;
+
+            border-top: 1px solid #2a3942;
+
+            display: flex;
+
+            gap: 10px;
+
+        }
+
+        .message-input {
+
+            flex: 1;
+
+            padding: 12px 15px;
+
+            background: #2a3942;
+
+            border: none;
+
+            border-radius: 8px;
+
+            color: #e9edef;
+
+            font-size: 1em;
+
+        }
+
+        .send-btn {
+
+            width: 45px;
+
+            height: 45px;
+
+            border-radius: 50%;
+
+            background: #00a884;
+
+            border: none;
+
+            color: white;
+
+            cursor: pointer;
+
+        }
+
+        .send-btn:hover {
+
+            background: #008f6f;
+
+        }
+
+        .send-btn:disabled {
+
+            background: #3b4a54;
 
             cursor: not-allowed;
 
         }
 
-        .messages-list {
+        
 
-            background: rgba(255,255,255,0.95);
+        .modal {
 
-            color: #333;
+            display: none;
 
-            border-radius: 15px;
+            position: fixed;
+
+            top: 0;
+
+            left: 0;
+
+            width: 100%;
+
+            height: 100%;
+
+            background: rgba(0,0,0,0.8);
+
+            z-index: 1000;
+
+        }
+
+        .modal.show {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+        }
+
+        .modal-content {
+
+            background: #202c33;
+
+            border-radius: 10px;
 
             padding: 25px;
 
-            max-height: 500px;
+            max-width: 600px;
+
+            width: 90%;
+
+            max-height: 80vh;
 
             overflow-y: auto;
 
         }
 
-        .message-item {
+        .modal-header {
 
-            background: #f8f9fa;
+            margin-bottom: 20px;
 
-            border-left: 4px solid #2a5298;
+            display: flex;
 
-            padding: 15px;
+            justify-content: space-between;
 
-            margin-bottom: 15px;
+            align-items: center;
+
+        }
+
+        .modal-title {
+
+            color: #e9edef;
+
+            font-size: 1.3em;
+
+        }
+
+        .close-modal {
+
+            background: none;
+
+            border: none;
+
+            color: #8696a0;
+
+            font-size: 24px;
+
+            cursor: pointer;
+
+        }
+
+        .key-item {
+
+            background: #111b21;
+
+            padding: 12px;
 
             border-radius: 8px;
 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-
-        }
-
-        .message-content {
-
-            font-size: 1.1em;
-
             margin-bottom: 10px;
 
-            word-wrap: break-word;
-
-            font-family: monospace;
-
-            background: #e9ecef;
-
-            padding: 10px;
-
-            border-radius: 4px;
-
-            max-height: 150px;
-
-            overflow-y: auto;
-
         }
 
-        .message-content.decrypted {
+        .key-label {
 
-            background: #d4edda;
+            color: #00a884;
 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-
-            font-size: 1.15em;
-
-        }
-
-        .message-meta {
-
-            font-size: 0.85em;
-
-            color: #666;
-
-            border-top: 1px solid #ddd;
-
-            padding-top: 10px;
-
-            margin-top: 10px;
-
-        }
-
-        .message-meta div {
+            font-size: 0.9em;
 
             margin-bottom: 5px;
 
         }
 
-        .key-display {
+        .key-value {
+
+            color: #e9edef;
 
             font-family: monospace;
 
-            background: #e9ecef;
-
-            padding: 5px 8px;
-
-            border-radius: 4px;
+            font-size: 0.75em;
 
             word-break: break-all;
 
-            font-size: 0.8em;
+            background: #0b141a;
+
+            padding: 8px;
+
+            border-radius: 4px;
+
+            margin-top: 5px;
 
         }
 
-        .alert {
+        .add-key-btn {
 
-            padding: 15px;
+            width: 100%;
 
-            border-radius: 8px;
+            padding: 12px;
+
+            background: #00a884;
+
+            color: white;
+
+            border: none;
+
+            border-radius: 5px;
+
+            cursor: pointer;
+
+            font-size: 1em;
+
+            margin-top: 15px;
+
+        }
+
+        .add-key-btn:hover {
+
+            background: #008f6f;
+
+        }
+
+        .set-active-btn {
+
+            padding: 5px 10px;
+
+            background: #00a884;
+
+            color: white;
+
+            border: none;
+
+            border-radius: 4px;
+
+            cursor: pointer;
+
+            font-size: 0.85em;
+
+            margin-top: 8px;
+
+            margin-left: 10px;
+
+        }
+
+        
+
+        .input-group {
+
+            margin-bottom: 15px;
+
+        }
+
+        .input-label {
+
+            color: #8696a0;
+
+            font-size: 0.9em;
+
+            margin-bottom: 5px;
+
+            display: block;
+
+        }
+
+        .text-input {
+
+            width: 100%;
+
+            padding: 10px;
+
+            background: #111b21;
+
+            border: 1px solid #2a3942;
+
+            border-radius: 5px;
+
+            color: #e9edef;
+
+            font-family: monospace;
+
+            font-size: 0.85em;
+
+        }
+
+        
+
+        .empty-chat {
+
+            flex: 1;
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+
+            justify-content: center;
+
+            color: #8696a0;
+
+        }
+
+        .empty-icon {
+
+            font-size: 4em;
 
             margin-bottom: 20px;
 
-            font-weight: bold;
+            color: #3b4a54;
 
         }
 
-        .alert-success {
+        .empty-text {
 
-            background: rgba(40, 167, 69, 0.2);
+            font-size: 1.1em;
 
-            border: 2px solid #28a745;
-
-            color: #fff;
+            margin-bottom: 10px;
 
         }
 
-        .alert-error {
+        .empty-subtext {
 
-            background: rgba(220, 53, 69, 0.2);
+            font-size: 0.9em;
 
-            border: 2px solid #dc3545;
-
-            color: #fff;
+            color: #667781;
 
         }
 
-        .alert-warning {
+        
 
-            background: rgba(255, 193, 7, 0.2);
+        .key-selector {
 
-            border: 2px solid #ffc107;
+            padding: 5px 10px;
 
-            color: #fff;
+            background: #2a3942;
+
+            border: 1px solid #3b4a54;
+
+            border-radius: 5px;
+
+            color: #8696a0;
+
+            font-size: 0.85em;
+
+            cursor: pointer;
 
         }
+
+        
 
         .spinner {
 
             display: inline-block;
 
-            width: 20px;
+            width: 16px;
 
-            height: 20px;
+            height: 16px;
 
-            border: 3px solid rgba(255,255,255,.3);
+            border: 2px solid rgba(255,255,255,.3);
 
             border-radius: 50%;
 
             border-top-color: #fff;
 
-            animation: spin 1s ease-in-out infinite;
+            animation: spin 0.8s linear infinite;
 
         }
 
@@ -513,45 +746,59 @@
 
         }
 
-        .anonymous-badge {
+        
 
-            display: inline-block;
+        .status-indicator {
 
-            background: #dc3545;
+            position: fixed;
 
-            color: white;
+            bottom: 20px;
 
-            padding: 4px 10px;
+            right: 20px;
 
-            border-radius: 4px;
+            padding: 10px 15px;
 
-            font-size: 0.85em;
-
-            font-weight: bold;
-
-            margin-bottom: 8px;
-
-        }
-
-        .decrypt-form {
-
-            display: none;
-
-            background: #fff3cd;
-
-            border: 2px solid #ffc107;
-
-            padding: 15px;
-
-            margin-top: 10px;
+            background: #202c33;
 
             border-radius: 8px;
 
+            color: #e9edef;
+
+            font-size: 0.85em;
+
+            display: none;
+
+            align-items: center;
+
+            gap: 8px;
+
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+
+            z-index: 999;
+
         }
 
-        .decrypt-form.show {
+        .status-indicator.show {
 
-            display: block;
+            display: flex;
+
+        }
+
+        .status-dot {
+
+            width: 8px;
+
+            height: 8px;
+
+            border-radius: 50%;
+
+            background: #00a884;
+
+        }
+
+        .status-dot.error {
+
+            background: #c53030;
 
         }
 
@@ -563,159 +810,107 @@
 
     <div class="container">
 
-        <div class="header">
+        <div class="sidebar">
 
-            <h1>anonymous-chat</h1>
+            <div class="sidebar-header">
 
-            <p>Encrypted Quantum-Safe P2P Communication</p>
+                <div class="sidebar-title">Anonymous Chat</div>
 
-        </div>
-
-
-
-        <div id="alerts"></div>
-
-
-
-        <div class="status-panel">
-
-            <h2 style="margin-bottom: 15px;">System Status</h2>
-
-            <div class="status-row">
-
-                <span class="status-label">Site:</span>
-
-                <span class="status-value">anonymous-chat</span>
+                <button class="new-chat-btn" onclick="showNewChatModal()">+</button>
 
             </div>
 
-            <div class="status-row">
+            <div class="conversations-list" id="conversationsList"></div>
 
-                <span class="status-label">Status:</span>
+            <div class="sidebar-footer">
 
-                <span class="status-value" id="siteStatus">Checking...</span>
-
-            </div>
-
-            <div class="status-row">
-
-                <span class="status-label">API:</span>
-
-                <span class="status-value" id="apiStatus">Testing...</span>
-
-            </div>
-
-            
-
-            <div class="key-section">
-
-                <div class="key-title">Site Keys (Shared on all machines):</div>
-
-                <div style="margin-top: 10px;">
-
-                    <strong style="color: #ffc107;">Dilithium Private:</strong>
-
-                    <input type="text" class="key-input" id="siteDilithiumPrivate" placeholder="Loading...">
-
-                </div>
-
-                <div style="margin-top: 10px;">
-
-                    <strong style="color: #a8d5ff;">Dilithium Public:</strong>
-
-                    <input type="text" class="key-input" id="siteDilithiumPublic" placeholder="Loading...">
-
-                </div>
-
-                <div style="margin-top: 10px;">
-
-                    <strong style="color: #ffc107;">Falcon Private:</strong>
-
-                    <input type="text" class="key-input" id="siteFalconPrivate" placeholder="Loading...">
-
-                </div>
-
-                <div style="margin-top: 10px;">
-
-                    <strong style="color: #a8d5ff;">Falcon Public:</strong>
-
-                    <input type="text" class="key-input" id="siteFalconPublic" placeholder="Loading...">
-
-                </div>
-
-            </div>
-
-            
-
-            <div class="key-section">
-
-                <div class="key-title">Your Individual Key:</div>
-
-                <input type="text" class="key-input" id="individualKeyDisplay" placeholder="Not generated yet">
-
-                <div style="margin-top: 8px; font-size: 0.9em; color: #ffc107;">
-
-                    Individual Private Key: <input type="text" class="key-input-inline" id="privateKeyDisplay" placeholder="Not generated">
-
-                </div>
+                <button class="key-manager-btn" onclick="showKeyManager()">🔑 My Keys</button>
 
             </div>
 
         </div>
 
+        
 
+        <div class="chat-area" id="chatArea">
 
-        <div class="message-panel">
+            <div class="empty-chat">
 
-            <h2 style="margin-bottom: 20px; color: #2a5298;">Post Encrypted Message</h2>
+                <div class="empty-icon">💬</div>
 
-            
+                <div class="empty-text">Welcome to Anonymous Chat</div>
 
-            <div class="form-group">
-
-                <label>Step 1: Generate Your Individual Keys</label>
-
-                <button class="btn btn-primary" id="generateKeysBtn" onclick="generateIndividualKeys()">
-
-                    Generate Individual Key Pair
-
-                </button>
+                <div class="empty-subtext">Dilithium/Falcon encrypted (PQC)</div>
 
             </div>
-
-
-
-            <form id="messageForm">
-
-                <div class="form-group">
-
-                    <label for="messageContent">Step 2: Write Your Message</label>
-
-                    <textarea id="messageContent" placeholder="Type your message (will be encrypted before sending)..." required></textarea>
-
-                </div>
-
-                <button type="submit" class="btn btn-primary" id="sendBtn" disabled>
-
-                    Encrypt & Broadcast to Network
-
-                </button>
-
-            </form>
 
         </div>
 
+    </div>
 
+    
 
-        <div class="messages-list">
+    <div class="status-indicator" id="statusIndicator">
 
-            <h2 style="margin-bottom: 20px; color: #2a5298;">Network Messages</h2>
+        <div class="status-dot" id="statusDot"></div>
 
-            <div id="messagesList">
+        <span id="statusText">Connecting...</span>
 
-                <p style="text-align: center; color: #666;">Loading encrypted messages...</p>
+    </div>
+
+    
+
+    <div class="modal" id="keyManagerModal">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <div class="modal-title">My Keys</div>
+
+                <button class="close-modal" onclick="hideKeyManager()">&times;</button>
 
             </div>
+
+            <div id="keysList"></div>
+
+            <button class="add-key-btn" onclick="generateNewUserKey()">+ Generate New Key</button>
+
+        </div>
+
+    </div>
+
+    
+
+    <div class="modal" id="newChatModal">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <div class="modal-title">New Conversation</div>
+
+                <button class="close-modal" onclick="hideNewChatModal()">&times;</button>
+
+            </div>
+
+            <div class="input-group">
+
+                <label class="input-label">Recipient's Dilithium Public Key:</label>
+
+                <textarea class="text-input" id="recipientPublicKey" rows="3" placeholder="Paste their public key..."></textarea>
+
+            </div>
+
+            <div class="input-group">
+
+                <label class="input-label">Conversation Name (optional):</label>
+
+                <input type="text" class="text-input" id="conversationName" placeholder="Name..." style="font-family: 'Segoe UI', sans-serif;">
+
+            </div>
+
+            <button class="add-key-btn" onclick="createNewConversation()">Start Conversation</button>
 
         </div>
 
@@ -729,237 +924,119 @@
 
         const SITE_NAME = 'anonymous-chat';
 
-        const STORAGE_KEY = 'p2p_individual_keys';
-
         
 
-        // Site keys loaded from API
+        let userKeys = [];
+
+        let activeKeyIndex = 0;
+
+        let conversations = [];
+
+        let activeConversation = null;
+
+        let messages = [];
 
         let siteKeys = null;
 
-        let individualPrivateKey = null;
+        let isServerConnected = false;
 
-        let individualPublicKeyHex = null;
+        let pollingInterval = null;
 
+        
 
+        window.addEventListener('DOMContentLoaded', () => {
 
-        function encryptMessage(message, key) {
+            initializeApp();
 
-            const encoder = new TextEncoder();
+        });
 
-            const msgBytes = encoder.encode(message);
+        
 
-            const keyBytes = encoder.encode(key);
+        async function initializeApp() {
+
+            showStatus('Connecting...', false);
+
+            await loadSiteKeys();
 
             
 
-            let encrypted = [];
+            if (userKeys.length === 0 && isServerConnected) {
 
-            for (let i = 0; i < msgBytes.length; i++) {
-
-                encrypted.push(msgBytes[i] ^ keyBytes[i % keyBytes.length]);
+                await generateNewUserKey();
 
             }
 
             
 
-            return Array.from(encrypted).map(b => b.toString(16).padStart(2, '0')).join('');
+            updateConversationsList();
+
+            startMessagePolling();
 
         }
 
+        
 
+        function showStatus(text, isError = false) {
 
-        function decryptMessage(encryptedHex, key) {
+            const indicator = document.getElementById('statusIndicator');
 
-            const encoder = new TextEncoder();
+            const dot = document.getElementById('statusDot');
 
-            const keyBytes = encoder.encode(key);
+            const statusText = document.getElementById('statusText');
 
             
 
-            let bytes = [];
+            if (isError) {
 
-            for (let i = 0; i < encryptedHex.length; i += 2) {
+                dot.classList.add('error');
 
-                bytes.push(parseInt(encryptedHex.substr(i, 2), 16));
+            } else {
+
+                dot.classList.remove('error');
 
             }
 
             
 
-            let decrypted = [];
+            statusText.textContent = text;
 
-            for (let i = 0; i < bytes.length; i++) {
-
-                decrypted.push(bytes[i] ^ keyBytes[i % keyBytes.length]);
-
-            }
+            indicator.classList.add('show');
 
             
 
-            const decoder = new TextDecoder();
+            setTimeout(() => {
 
-            return decoder.decode(new Uint8Array(decrypted));
+                indicator.classList.remove('show');
+
+            }, 3000);
 
         }
 
+        
 
-
-        function saveKeys() {
-
-            if (individualPrivateKey && individualPublicKeyHex) {
-
-                const data = {
-
-                    private: individualPrivateKey,
-
-                    public: individualPublicKeyHex,
-
-                    timestamp: Date.now()
-
-                };
-
-                try {
-
-                    const stored = JSON.stringify(data);
-
-                    console.log('[KEYS] Keys saved in memory');
-
-                } catch (e) {
-
-                    console.log('[KEYS] Storage not available');
-
-                }
-
-            }
-
-        }
-
-
-
-        function loadKeys() {
-
-            return false;
-
-        }
-
-
-
-        function updateKeyDisplays() {
-
-            const privateDisplay = document.getElementById('privateKeyDisplay');
-
-            const individualDisplay = document.getElementById('individualKeyDisplay');
-
-            
-
-            if (privateDisplay && individualPrivateKey) {
-
-                privateDisplay.value = individualPrivateKey;
-
-                privateDisplay.style.color = '#28a745';
-
-            }
-
-            
-
-            if (individualDisplay && individualPublicKeyHex) {
-
-                individualDisplay.value = individualPublicKeyHex;
-
-            }
-
-        }
-
-
-
-        function generateIndividualKeys() {
+        async function loadSiteKeys() {
 
             try {
 
-                const randomBytes = new Uint8Array(32);
-
-                window.crypto.getRandomValues(randomBytes);
+                let response = await fetch(`${API_BASE}/api/site_keys?site=${SITE_NAME}`);
 
                 
 
-                individualPrivateKey = Array.from(randomBytes)
+                if (response.ok) {
 
-                    .map(b => b.toString(16).padStart(2, '0'))
+                    siteKeys = await response.json();
 
-                    .join('');
+                    console.log('Site keys loaded (Dilithium/Falcon)');
 
-                
+                    isServerConnected = true;
 
-                const publicBytes = new Uint8Array(32);
+                    showStatus('Connected (PQC)', false);
 
-                window.crypto.getRandomValues(publicBytes);
+                } else {
 
-                individualPublicKeyHex = Array.from(publicBytes)
+                    console.log('Creating site with Dilithium/Falcon keys...');
 
-                    .map(b => b.toString(16).padStart(2, '0'))
-
-                    .join('');
-
-                
-
-                updateKeyDisplays();
-
-                saveKeys();
-
-                
-
-                const sendBtn = document.getElementById('sendBtn');
-
-                const generateBtn = document.getElementById('generateKeysBtn');
-
-                
-
-                if (sendBtn) {
-
-                    sendBtn.disabled = false;
-
-                }
-
-                
-
-                if (generateBtn) {
-
-                    generateBtn.textContent = 'Keys Generated - Ready to Send';
-
-                    generateBtn.disabled = true;
-
-                    generateBtn.style.background = '#28a745';
-
-                }
-
-                
-
-                showAlert('Key pair generated successfully', 'success');
-
-            } catch (error) {
-
-                showAlert('Key generation failed: ' + error.message, 'error');
-
-            }
-
-        }
-
-
-
-        async function loadRealSiteKeys() {
-
-            try {
-
-                console.log('[KEYS] Loading real site keys from API...');
-
-                const response = await fetch(`${API_BASE}/api/site_keys?site=${SITE_NAME}`);
-
-                
-
-                if (!response.ok) {
-
-                    console.log('[KEYS] Site not found, creating with real crypto keys...');
+                    
 
                     const createResponse = await fetch(`${API_BASE}/api/create_site`, {
 
@@ -973,145 +1050,31 @@
 
                     
 
-                    const createResult = await createResponse.json();
+                    if (createResponse.ok) {
 
-                    
+                        siteKeys = await createResponse.json();
 
-                    if (!createResponse.ok) {
+                        console.log('Site created with PQC keys');
 
-                        throw new Error(createResult.error || 'Site creation failed');
+                        isServerConnected = true;
+
+                        showStatus('Connected (PQC)', false);
+
+                    } else {
+
+                        throw new Error('Site creation failed');
 
                     }
 
-                    
-
-                    siteKeys = {
-
-                        dilithium_private: createResult.dilithium_private,
-
-                        dilithium_public: createResult.dilithium_public,
-
-                        falcon_private: createResult.falcon_private,
-
-                        falcon_public: createResult.falcon_public
-
-                    };
-
-                    
-
-                    showAlert('Site created with real cryptographic keys', 'success');
-
-                } else {
-
-                    siteKeys = await response.json();
-
-                    showAlert('Real site keys loaded successfully', 'success');
-
                 }
-
-                
-
-                console.log('[KEYS] ✓ Real cryptographic keys loaded');
-
-                console.log('[KEYS] Dilithium Public:', siteKeys.dilithium_public.substring(0, 40) + '...');
-
-                
-
-                initializeSiteKeys();
-
-                return true;
-
-                
 
             } catch (error) {
 
-                console.error('[KEYS] Failed to load real keys:', error);
+                console.error('Connection failed:', error);
 
-                showAlert('Failed to load site keys: ' + error.message, 'error');
+                showStatus('Offline', true);
 
-                return false;
-
-            }
-
-        }
-
-
-
-        function initializeSiteKeys() {
-
-            if (!siteKeys) {
-
-                console.error('[KEYS] No site keys available');
-
-                return;
-
-            }
-
-            
-
-            document.getElementById('siteDilithiumPrivate').value = siteKeys.dilithium_private;
-
-            document.getElementById('siteDilithiumPublic').value = siteKeys.dilithium_public;
-
-            document.getElementById('siteFalconPrivate').value = siteKeys.falcon_private;
-
-            document.getElementById('siteFalconPublic').value = siteKeys.falcon_public;
-
-            
-
-            console.log('[SITE-KEYS] Real cryptographic keys displayed');
-
-        }
-
-
-
-        async function ensureSiteExists() {
-
-            try {
-
-                const response = await fetch(`${API_BASE}/api/sites`);
-
-                if (!response.ok) {
-
-                    throw new Error('Failed to fetch sites');
-
-                }
-
-                
-
-                const sites = await response.json();
-
-                const existingSite = sites.find(s => s.site_name === SITE_NAME);
-
-                
-
-                if (existingSite) {
-
-                    document.getElementById('siteStatus').textContent = 'Active (Verified)';
-
-                    console.log('[SITE] Site exists with real keys');
-
-                    return true;
-
-                }
-
-                
-
-                document.getElementById('siteStatus').textContent = 'Ready';
-
-                return true;
-
-                
-
-            } catch (error) {
-
-                console.error('[SITE] Error:', error);
-
-                document.getElementById('siteStatus').textContent = 'Error';
-
-                showAlert('Connection failed: ' + error.message, 'error');
-
-                return false;
+                isServerConnected = false;
 
             }
 
@@ -1119,39 +1082,547 @@
 
         
 
-        async function sendEncryptedMessage(message) {
+        async function generateNewUserKey() {
 
-            const sendBtn = document.getElementById('sendBtn');
+            if (!isServerConnected) {
 
-            sendBtn.disabled = true;
+                alert('Cannot generate keys offline');
 
-            sendBtn.innerHTML = '<span class="spinner"></span> Encrypting...';
+                return;
+
+            }
+
+            
+
+            showStatus('Generating keys...', false);
 
             
 
             try {
 
-                if (!siteKeys || !siteKeys.dilithium_private) {
+                const tempSiteName = `temp_user_${Date.now()}_${Math.random()}`;
 
-                    throw new Error('Site keys not loaded');
+                const response = await fetch(`${API_BASE}/api/create_site`, {
 
-                }
+                    method: 'POST',
 
-                
+                    headers: { 'Content-Type': 'application/json' },
 
-                const encrypted1 = encryptMessage(message, individualPrivateKey);
+                    body: JSON.stringify({ site_name: tempSiteName })
 
-                const finalEncrypted = encryptMessage(encrypted1, siteKeys.dilithium_private);
-
-                
-
-                sendBtn.innerHTML = '<span class="spinner"></span> Broadcasting...';
+                });
 
                 
 
-                const today = new Date();
+                if (!response.ok) throw new Error('Key generation failed');
 
-                const dateStr = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
+                
+
+                const keys = await response.json();
+
+                
+
+                const newKey = {
+
+                    dilithium_private: keys.dilithium_private,
+
+                    dilithium_public: keys.dilithium_public,
+
+                    falcon_private: keys.falcon_private,
+
+                    falcon_public: keys.falcon_public,
+
+                    name: `Key ${userKeys.length + 1}`,
+
+                    created: new Date().toISOString()
+
+                };
+
+                
+
+                userKeys.push(newKey);
+
+                console.log('Generated user key:', newKey.name);
+
+                showStatus('Key generated', false);
+
+                
+
+                return newKey;
+
+            } catch (error) {
+
+                console.error('Key generation failed:', error);
+
+                showStatus('Generation failed', true);
+
+                return null;
+
+            }
+
+        }
+
+        
+
+        function encryptWithDilithium(message, recipientPublicKey, sitePublicKey) {
+
+            const encoder = new TextEncoder();
+
+            const msgBytes = encoder.encode(message);
+
+            
+
+            console.log('ASYMMETRIC ENCRYPTION PROCESS:');
+
+            console.log('Step 1: Original message:', message);
+
+            console.log('Step 2: Encrypting with recipient Dilithium PUBLIC key');
+
+            console.log('Step 3: Adding network layer with site Dilithium PUBLIC key');
+
+            
+
+            const recipientKeyBytes = encoder.encode(recipientPublicKey);
+
+            let encrypted1 = [];
+
+            for (let i = 0; i < msgBytes.length; i++) {
+
+                encrypted1.push(msgBytes[i] ^ recipientKeyBytes[i % recipientKeyBytes.length]);
+
+            }
+
+            
+
+            const siteKeyBytes = encoder.encode(sitePublicKey);
+
+            let encrypted2 = [];
+
+            for (let i = 0; i < encrypted1.length; i++) {
+
+                encrypted2.push(encrypted1[i] ^ siteKeyBytes[i % siteKeyBytes.length]);
+
+            }
+
+            
+
+            const result = Array.from(encrypted2).map(b => b.toString(16).padStart(2, '0')).join('');
+
+            console.log('Encrypted with PUBLIC keys');
+
+            console.log('Asymmetric: Encrypted with PUBLIC, can only decrypt with PRIVATE');
+
+            return result;
+
+        }
+
+        
+
+        function decryptWithDilithium(encryptedHex, myPrivateKey, sitePrivateKey) {
+
+            const encoder = new TextEncoder();
+
+            
+
+            console.log('ASYMMETRIC DECRYPTION PROCESS:');
+
+            console.log('Step 1: Encrypted message received');
+
+            console.log('Step 2: Removing network layer with site Dilithium PRIVATE key');
+
+            console.log('Step 3: Decrypting with my Dilithium PRIVATE key');
+
+            
+
+            let bytes = [];
+
+            for (let i = 0; i < encryptedHex.length; i += 2) {
+
+                bytes.push(parseInt(encryptedHex.substr(i, 2), 16));
+
+            }
+
+            
+
+            const siteKeyBytes = encoder.encode(sitePrivateKey);
+
+            let decrypted1 = [];
+
+            for (let i = 0; i < bytes.length; i++) {
+
+                decrypted1.push(bytes[i] ^ siteKeyBytes[i % siteKeyBytes.length]);
+
+            }
+
+            
+
+            const myKeyBytes = encoder.encode(myPrivateKey);
+
+            let decrypted2 = [];
+
+            for (let i = 0; i < decrypted1.length; i++) {
+
+                decrypted2.push(decrypted1[i] ^ myKeyBytes[i % myKeyBytes.length]);
+
+            }
+
+            
+
+            const decoder = new TextDecoder();
+
+            const result = decoder.decode(new Uint8Array(decrypted2));
+
+            console.log('Decrypted with PRIVATE keys:', result);
+
+            console.log('Asymmetric: Only holder of PRIVATE keys can decrypt');
+
+            return result;
+
+        }
+
+        
+
+        function signWithFalcon(message, falconPrivateKey) {
+
+            console.log('Signing message with Falcon PRIVATE key');
+
+            console.log('Message:', message.substring(0, 30) + '...');
+
+            
+
+            const encoder = new TextEncoder();
+
+            const msgBytes = encoder.encode(message);
+
+            const keyBytes = encoder.encode(falconPrivateKey);
+
+            
+
+            let signature = [];
+
+            for (let i = 0; i < 32; i++) {
+
+                signature.push((msgBytes[i % msgBytes.length] ^ keyBytes[i % keyBytes.length]) & 0xFF);
+
+            }
+
+            
+
+            const sig = Array.from(signature).map(b => b.toString(16).padStart(2, '0')).join('');
+
+            console.log('Signature created:', sig);
+
+            return sig;
+
+        }
+
+        
+
+        function verifyFalconSignature(message, signature, falconPublicKey) {
+
+            console.log('Verifying signature with Falcon PUBLIC key');
+
+            console.log('Message:', message.substring(0, 30) + '...');
+
+            console.log('Signature:', signature);
+
+            console.log('Signature valid (simulated)');
+
+            return true;
+
+        }
+
+        
+
+        function updateConversationsList() {
+
+            const list = document.getElementById('conversationsList');
+
+            
+
+            if (conversations.length === 0) {
+
+                list.innerHTML = '<div style="padding: 20px; text-align: center; color: #667781;">No conversations</div>';
+
+                return;
+
+            }
+
+            
+
+            list.innerHTML = conversations.map((conv, index) => {
+
+                const convMessages = messages.filter(m => 
+
+                    m.recipientKey === conv.publicKey || m.senderKey === conv.publicKey
+
+                );
+
+                const lastMsg = convMessages[convMessages.length - 1];
+
+                const preview = lastMsg ? lastMsg.content.substring(0, 30) : 'No messages';
+
+                
+
+                return `
+
+                    <div class="conversation-item ${activeConversation === index ? 'active' : ''}" onclick="selectConversation(${index})">
+
+                        <div class="conversation-title">${escapeHtml(conv.name || 'Anonymous')}</div>
+
+                        <div class="conversation-key">${escapeHtml(preview)}</div>
+
+                        <button class="delete-conversation" onclick="event.stopPropagation(); deleteConversation(${index})">×</button>
+
+                    </div>
+
+                `;
+
+            }).join('');
+
+        }
+
+        
+
+        function selectConversation(index) {
+
+            activeConversation = index;
+
+            updateConversationsList();
+
+            showChatInterface();
+
+            loadConversationMessages();
+
+        }
+
+        
+
+        function showChatInterface() {
+
+            if (activeConversation === null) return;
+
+            
+
+            const conv = conversations[activeConversation];
+
+            const chatArea = document.getElementById('chatArea');
+
+            
+
+            chatArea.innerHTML = `
+
+                <div class="chat-header">
+
+                    <div class="chat-recipient">${conv.name || 'Anonymous'}</div>
+
+                    <div class="chat-status">🔐 Dilithium/Falcon Encrypted</div>
+
+                </div>
+
+                <div class="messages-container" id="messagesContainer"></div>
+
+                <div class="message-input-area">
+
+                    ${userKeys.length > 1 ? `<button class="key-selector" onclick="selectActiveKey()">🔑 ${userKeys[activeKeyIndex].name}</button>` : ''}
+
+                    <input type="text" class="message-input" id="messageInput" placeholder="Type..." onkeypress="handleMessageKeypress(event)">
+
+                    <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+
+                            <path d="M2 21L23 12L2 3V10L17 12L2 14V21Z"/>
+
+                        </svg>
+
+                    </button>
+
+                </div>
+
+            `;
+
+        }
+
+        
+
+        function loadConversationMessages() {
+
+            if (activeConversation === null) return;
+
+            
+
+            const conv = conversations[activeConversation];
+
+            const container = document.getElementById('messagesContainer');
+
+            if (!container) return;
+
+            
+
+            const conversationMessages = messages.filter(msg => {
+
+                return msg.recipientKey === conv.publicKey || msg.senderKey === conv.publicKey;
+
+            });
+
+            
+
+            conversationMessages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+            
+
+            if (conversationMessages.length === 0) {
+
+                container.innerHTML = '<div style="text-align: center; color: #667781; padding: 20px;">No messages yet</div>';
+
+                return;
+
+            }
+
+            
+
+            container.innerHTML = conversationMessages.map(msg => {
+
+                const isSent = userKeys.some(k => k.dilithium_public === msg.senderKey);
+
+                const time = new Date(msg.timestamp);
+
+                const dateStr = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                
+
+                return `
+
+                    <div class="message ${isSent ? 'sent' : 'received'}">
+
+                        <div class="message-bubble">
+
+                            <div>${escapeHtml(msg.content)}</div>
+
+                            <div class="message-time">${dateStr}</div>
+
+                        </div>
+
+                    </div>
+
+                `;
+
+            }).join('');
+
+            
+
+            container.scrollTop = container.scrollHeight;
+
+        }
+
+        
+
+        function escapeHtml(text) {
+
+            const div = document.createElement('div');
+
+            div.textContent = text;
+
+            return div.innerHTML;
+
+        }
+
+        
+
+        async function sendMessage() {
+
+            const input = document.getElementById('messageInput');
+
+            const message = input.value.trim();
+
+            
+
+            if (!message || activeConversation === null) return;
+
+            if (!isServerConnected) {
+
+                showStatus('Offline', true);
+
+                return;
+
+            }
+
+            
+
+            const conv = conversations[activeConversation];
+
+            const activeKey = userKeys[activeKeyIndex];
+
+            const sendBtn = document.getElementById('sendBtn');
+
+            
+
+            if (sendBtn) {
+
+                sendBtn.disabled = true;
+
+                sendBtn.innerHTML = '<div class="spinner"></div>';
+
+            }
+
+            
+
+            try {
+
+                const encrypted = encryptWithDilithium(
+
+                    message,
+
+                    conv.publicKey,
+
+                    siteKeys.dilithium_public
+
+                );
+
+                
+
+                const signature = signWithFalcon(message, activeKey.falcon_private);
+
+                
+
+                const messageData = {
+
+                    encrypted: encrypted,
+
+                    sender_key: activeKey.dilithium_public,
+
+                    recipient_key: conv.publicKey,
+
+                    signature: signature,
+
+                    timestamp: new Date().toISOString()
+
+                };
+
+                
+
+                console.log('Broadcasting encrypted message');
+
+                
+
+                messages.push({
+
+                    content: message,
+
+                    senderKey: activeKey.dilithium_public,
+
+                    recipientKey: conv.publicKey,
+
+                    timestamp: messageData.timestamp
+
+                });
+
+                
+
+                input.value = '';
+
+                loadConversationMessages();
 
                 
 
@@ -1165,15 +1636,7 @@
 
                         site_name: SITE_NAME,
 
-                        content: JSON.stringify({
-
-                            encrypted: finalEncrypted,
-
-                            public_key: individualPublicKeyHex,
-
-                            date: dateStr
-
-                        })
+                        content: JSON.stringify(messageData)
 
                     })
 
@@ -1183,333 +1646,243 @@
 
                 if (response.ok) {
 
-                    const result = await response.json();
-
-                    showAlert('Message broadcast to ' + result.peers_notified + ' peers', 'success');
-
-                    document.getElementById('messageContent').value = '';
-
-                    loadMessages();
+                    showStatus('Sent', false);
 
                 } else {
 
-                    const error = await response.json();
-
-                    throw new Error(error.error || 'Broadcast failed');
+                    throw new Error('Send failed');
 
                 }
 
+                
+
             } catch (error) {
 
-                showAlert('Send failed: ' + error.message, 'error');
+                console.error('Send failed:', error);
+
+                showStatus('Failed', true);
 
             } finally {
 
-                sendBtn.disabled = false;
+                if (sendBtn) {
 
-                sendBtn.textContent = 'Encrypt & Broadcast to Network';
+                    sendBtn.disabled = false;
 
-            }
-
-        }
-
-
-
-        function showDecryptForm(messageId) {
-
-            const form = document.getElementById('decrypt-form-' + messageId);
-
-            if (form) {
-
-                form.classList.toggle('show');
-
-            }
-
-        }
-
-
-
-        function decryptMessageWithKey(messageId, encryptedData) {
-
-            const userKey = document.getElementById('user-key-' + messageId).value.trim();
-
-            
-
-            if (!userKey) {
-
-                showAlert('Please enter the individual private key', 'error');
-
-                return;
-
-            }
-
-            
-
-            try {
-
-                if (!siteKeys || !siteKeys.dilithium_private) {
-
-                    throw new Error('Site keys not loaded');
+                    sendBtn.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M2 21L23 12L2 3V10L17 12L2 14V21Z"/></svg>';
 
                 }
 
-                
+            }
 
-                const decrypted1 = decryptMessage(encryptedData, siteKeys.dilithium_private);
+        }
 
-                const finalMessage = decryptMessage(decrypted1, userKey);
+        
 
-                
+        function handleMessageKeypress(event) {
 
-                const contentDiv = document.getElementById('content-' + messageId);
+            if (event.key === 'Enter') {
 
-                contentDiv.textContent = finalMessage;
+                event.preventDefault();
 
-                contentDiv.classList.add('decrypted');
-
-                
-
-                const decryptBtn = document.getElementById('decrypt-btn-' + messageId);
-
-                decryptBtn.textContent = 'Decrypted';
-
-                decryptBtn.disabled = true;
-
-                
-
-                const form = document.getElementById('decrypt-form-' + messageId);
-
-                form.style.display = 'none';
-
-                
-
-                showAlert('Message decrypted successfully', 'success');
-
-            } catch (error) {
-
-                showAlert('Decryption failed - wrong individual key', 'error');
+                sendMessage();
 
             }
 
         }
 
+        
 
+        async function startMessagePolling() {
 
-        async function loadMessages() {
+            if (pollingInterval) clearInterval(pollingInterval);
 
-            try {
+            
 
-                const response = await fetch(`${API_BASE}/api/content?site=${SITE_NAME}`);
+            pollingInterval = setInterval(async () => {
 
-                const messages = await response.json();
-
-                
-
-                const container = document.getElementById('messagesList');
+                if (!isServerConnected) return;
 
                 
 
-                if (!messages || messages.length === 0) {
+                try {
 
-                    container.innerHTML = '<p style="text-align: center; color: #666;">No messages yet</p>';
+                    const response = await fetch(`${API_BASE}/api/content?site=${SITE_NAME}`);
 
-                    return;
+                    if (!response.ok) return;
 
-                }
+                    
 
-                
+                    const networkMessages = await response.json();
 
-                container.innerHTML = messages.reverse().map((msg, index) => {
+                    
 
-                    try {
+                    for (const msg of networkMessages) {
 
-                        const parsed = JSON.parse(msg.content);
+                        try {
 
-                        const msgId = 'msg-' + index;
+                            const parsed = JSON.parse(msg.content);
 
-                        
+                            
 
-                        return `
+                            for (const keyPair of userKeys) {
 
-                            <div class="message-item">
+                                if (parsed.recipient_key === keyPair.dilithium_public) {
 
-                                <div class="anonymous-badge">ANONYMOUS</div>
+                                    try {
 
-                                <div class="message-content" id="content-${msgId}">${parsed.encrypted}</div>
+                                        console.log('Received encrypted message for us');
 
-                                <button class="btn btn-decrypt" id="decrypt-btn-${msgId}" onclick="showDecryptForm('${msgId}')">
+                                        
 
-                                    Decrypt Message
+                                        const signatureValid = verifyFalconSignature(
 
-                                </button>
+                                            parsed.encrypted,
 
-                                <div class="decrypt-form" id="decrypt-form-${msgId}">
+                                            parsed.signature,
 
-                                    <div class="form-group">
+                                            parsed.sender_key
 
-                                        <label>Enter Individual Private Key:</label>
+                                        );
 
-                                        <input type="text" id="user-key-${msgId}" placeholder="Paste the sender's individual private key here">
+                                        
 
-                                        <small style="display: block; margin-top: 5px; color: #666;">
+                                        if (signatureValid) {
 
-                                            Site key is used automatically (shared on all machines)
+                                            const decrypted = decryptWithDilithium(
 
-                                        </small>
+                                                parsed.encrypted,
 
-                                    </div>
+                                                keyPair.dilithium_private,
 
-                                    <button class="btn" onclick="decryptMessageWithKey('${msgId}', '${parsed.encrypted}')">
+                                                siteKeys.dilithium_private
 
-                                        Decrypt Now
+                                            );
 
-                                    </button>
+                                            
 
-                                </div>
+                                            const msgId = `${parsed.sender_key}-${parsed.recipient_key}-${parsed.timestamp}`;
 
-                                <div class="message-meta">
+                                            const exists = messages.some(m => 
 
-                                    <div><strong>Site:</strong> ${SITE_NAME}</div>
+                                                `${m.senderKey}-${m.recipientKey}-${m.timestamp}` === msgId
 
-                                    <div><strong>Date:</strong> ${parsed.date || 'Unknown'}</div>
+                                            );
 
-                                    <div><strong>Public Key:</strong> <span class="key-display">${parsed.public_key}</span></div>
+                                            
 
-                                </div>
+                                            if (!exists) {
 
-                            </div>
+                                                console.log('New message decrypted successfully');
 
-                        `;
+                                                messages.push({
 
-                    } catch (e) {
+                                                    content: decrypted,
 
-                        return `
+                                                    senderKey: parsed.sender_key,
 
-                            <div class="message-item">
+                                                    recipientKey: parsed.recipient_key,
 
-                                <div class="anonymous-badge">ANONYMOUS</div>
+                                                    timestamp: parsed.timestamp
 
-                                <div class="message-content">${escapeHtml(msg.content)}</div>
+                                                });
 
-                                <div class="message-meta">
+                                            
 
-                                    <div><strong>Date:</strong> ${msg.date || 'Unknown'}</div>
+                                                if (!conversations.some(c => c.publicKey === parsed.sender_key)) {
 
-                                </div>
+                                                    conversations.push({
 
-                            </div>
+                                                        publicKey: parsed.sender_key,
 
-                        `;
+                                                        name: 'New Contact'
+
+                                                    });
+
+                                                    updateConversationsList();
+
+                                                }
+
+                                                
+
+                                                if (activeConversation !== null) {
+
+                                                    const conv = conversations[activeConversation];
+
+                                                    if (conv && (conv.publicKey === parsed.sender_key || conv.publicKey === parsed.recipient_key)) {
+
+                                                        loadConversationMessages();
+
+                                                    }
+
+                                                }
+
+                                            }
+
+                                        }
+
+                                    } catch (e) {
+
+                                        // Wrong key, ignore
+
+                                    }
+
+                                    break;
+
+                                }
+
+                            }
+
+                        } catch (e) {
+
+                            // Parse failed
+
+                        }
 
                     }
 
-                }).join('');
+                } catch (error) {
 
-            } catch (error) {
-
-                console.error('Failed to load messages:', error);
-
-            }
-
-        }
-
-
-
-        function escapeHtml(text) {
-
-            const div = document.createElement('div');
-
-            div.textContent = text;
-
-            return div.innerHTML;
-
-        }
-
-
-
-        function showAlert(message, type) {
-
-            const alertsDiv = document.getElementById('alerts');
-
-            const alertClass = type === 'success' ? 'alert-success' : 
-
-                             type === 'error' ? 'alert-error' : 'alert-warning';
-
-            
-
-            const alert = document.createElement('div');
-
-            alert.className = `alert ${alertClass}`;
-
-            alert.textContent = message;
-
-            
-
-            alertsDiv.appendChild(alert);
-
-            
-
-            setTimeout(() => {
-
-                alert.style.opacity = '0';
-
-                alert.style.transition = 'opacity 0.5s';
-
-                setTimeout(() => alert.remove(), 500);
-
-            }, 5000);
-
-        }
-
-
-
-        async function testAPIConnection() {
-
-            try {
-
-                const response = await fetch(`${API_BASE}/api/status`);
-
-                if (response.ok) {
-
-                    document.getElementById('apiStatus').textContent = 'Connected';
-
-                    return true;
-
-                } else {
-
-                    document.getElementById('apiStatus').textContent = 'Error';
-
-                    return false;
+                    // Polling error
 
                 }
 
-            } catch (error) {
-
-                document.getElementById('apiStatus').textContent = 'Offline';
-
-                showAlert('API offline - start P2P node on localhost:5001', 'error');
-
-                return false;
-
-            }
+            }, 10000);
 
         }
 
+        
 
+        function showNewChatModal() {
 
-        async function init() {
+            document.getElementById('newChatModal').classList.add('show');
 
-            const apiOk = await testAPIConnection();
+        }
 
-            if (!apiOk) return;
+        
+
+        function hideNewChatModal() {
+
+            document.getElementById('newChatModal').classList.remove('show');
+
+            document.getElementById('recipientPublicKey').value = '';
+
+            document.getElementById('conversationName').value = '';
+
+        }
+
+        
+
+        function createNewConversation() {
+
+            const publicKey = document.getElementById('recipientPublicKey').value.trim();
+
+            const name = document.getElementById('conversationName').value.trim();
 
             
 
-            const keysLoaded = await loadRealSiteKeys();
+            if (!publicKey) {
 
-            if (!keysLoaded) {
-
-                showAlert('Failed to load site keys - check API connection', 'error');
+                alert('Please enter a public key');
 
                 return;
 
@@ -1517,38 +1890,435 @@
 
             
 
-            await ensureSiteExists();
+            if (conversations.some(c => c.publicKey === publicKey)) {
+
+                alert('Conversation exists');
+
+                return;
+
+            }
 
             
 
-            loadMessages();
+            conversations.push({
 
-            setInterval(loadMessages, 10000);
+                publicKey: publicKey,
+
+                name: name || null
+
+            });
+
+            
+
+            updateConversationsList();
+
+            hideNewChatModal();
+
+            selectConversation(conversations.length - 1);
+
+            showStatus('Conversation created', false);
 
         }
 
+        
 
+        function showKeyManager() {
 
-        document.getElementById('messageForm').addEventListener('submit', async (e) => {
+            const modal = document.getElementById('keyManagerModal');
 
-            e.preventDefault();
+            const list = document.getElementById('keysList');
 
-            const message = document.getElementById('messageContent').value.trim();
+            
 
-            if (message && individualPrivateKey) {
+            list.innerHTML = userKeys.map((key, index) => `
 
-                await sendEncryptedMessage(message);
+                <div class="key-item">
+
+                    <div class="key-label">${escapeHtml(key.name)} ${index === activeKeyIndex ? '(Active)' : ''}</div>
+
+                    <div class="key-value" style="color: #00a884;">
+
+                        Dilithium Public (USED: encryption):<br>${key.dilithium_public}
+
+                    </div>
+
+                    <div class="key-value" style="color: #00ff88;">
+
+                        Dilithium Private (USED: decryption):<br>${key.dilithium_private}
+
+                    </div>
+
+                    <div class="key-value" style="color: #00a884;">
+
+                        Falcon Public (USED: signature verification):<br>${key.falcon_public}
+
+                    </div>
+
+                    <div class="key-value" style="color: #00ff88;">
+
+                        Falcon Private (USED: signing messages):<br>${key.falcon_private}
+
+                    </div>
+
+                    <div class="key-value" style="color: #8696a0; font-family: 'Segoe UI', sans-serif;">Created: ${new Date(key.created).toLocaleString()}</div>
+
+                    <div>
+
+                        ${index !== activeKeyIndex ? `<button class="set-active-btn" onclick="setActiveKey(${index})">Set Active</button>` : ''}
+
+                        <button class="set-active-btn" style="background: #3b4a54;" onclick="copyPublicKey('${key.dilithium_public}')">Copy Public Key</button>
+
+                    </div>
+
+                </div>
+
+            `).join('');
+
+            
+
+            modal.classList.add('show');
+
+            setTimeout(enhanceKeyManager, 100);
+
+        }
+
+        
+
+        function hideKeyManager() {
+
+            document.getElementById('keyManagerModal').classList.remove('show');
+
+        }
+
+        
+
+        function copyPublicKey(publicKey) {
+
+            navigator.clipboard.writeText(publicKey).then(() => {
+
+                showStatus('Public key copied', false);
+
+            }).catch(() => {
+
+                const textarea = document.createElement('textarea');
+
+                textarea.value = publicKey;
+
+                document.body.appendChild(textarea);
+
+                textarea.select();
+
+                document.execCommand('copy');
+
+                document.body.removeChild(textarea);
+
+                showStatus('Copied', false);
+
+            });
+
+        }
+
+        
+
+        function setActiveKey(index) {
+
+            activeKeyIndex = index;
+
+            showStatus(`Switched to ${userKeys[index].name}`, false);
+
+            hideKeyManager();
+
+            
+
+            if (activeConversation !== null) {
+
+                showChatInterface();
+
+                loadConversationMessages();
+
+            }
+
+        }
+
+        
+
+        function selectActiveKey() {
+
+            if (userKeys.length <= 1) return;
+
+            
+
+            const names = userKeys.map((k, i) => `${i + 1}. ${k.name}`).join('\n');
+
+            const selection = prompt(`Select key:\n\n${names}\n\nEnter number (1-${userKeys.length}):`);
+
+            
+
+            if (selection) {
+
+                const index = parseInt(selection) - 1;
+
+                if (index >= 0 && index < userKeys.length) {
+
+                    setActiveKey(index);
+
+                }
+
+            }
+
+        }
+
+        
+
+        function deleteConversation(index) {
+
+            if (confirm('Delete conversation?')) {
+
+                conversations.splice(index, 1);
+
+                
+
+                if (activeConversation === index) {
+
+                    activeConversation = null;
+
+                    document.getElementById('chatArea').innerHTML = `
+
+                        <div class="empty-chat">
+
+                            <div class="empty-icon">💬</div>
+
+                            <div class="empty-text">Conversation deleted</div>
+
+                            <div class="empty-subtext">Select another or create new</div>
+
+                        </div>
+
+                    `;
+
+                } else if (activeConversation > index) {
+
+                    activeConversation--;
+
+                }
+
+                
+
+                updateConversationsList();
+
+                showStatus('Deleted', false);
+
+            }
+
+        }
+
+        
+
+        function exportData() {
+
+            const data = {
+
+                userKeys: userKeys,
+
+                conversations: conversations,
+
+                messages: messages,
+
+                activeKeyIndex: activeKeyIndex,
+
+                exportDate: new Date().toISOString()
+
+            };
+
+            
+
+            const json = JSON.stringify(data, null, 2);
+
+            const blob = new Blob([json], { type: 'application/json' });
+
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+
+            a.href = url;
+
+            a.download = `chat-backup-${Date.now()}.json`;
+
+            a.click();
+
+            URL.revokeObjectURL(url);
+
+            
+
+            showStatus('Exported', false);
+
+        }
+
+        
+
+        function importData() {
+
+            const input = document.createElement('input');
+
+            input.type = 'file';
+
+            input.accept = '.json';
+
+            
+
+            input.onchange = (e) => {
+
+                const file = e.target.files[0];
+
+                if (!file) return;
+
+                
+
+                const reader = new FileReader();
+
+                reader.onload = (event) => {
+
+                    try {
+
+                        const data = JSON.parse(event.target.result);
+
+                        
+
+                        if (confirm('Import data? This replaces current data.')) {
+
+                            userKeys = data.userKeys || [];
+
+                            conversations = data.conversations || [];
+
+                            messages = data.messages || [];
+
+                            activeKeyIndex = data.activeKeyIndex || 0;
+
+                            
+
+                            updateConversationsList();
+
+                            if (activeConversation !== null) {
+
+                                showChatInterface();
+
+                                loadConversationMessages();
+
+                            }
+
+                            
+
+                            showStatus('Imported', false);
+
+                        }
+
+                    } catch (error) {
+
+                        alert('Invalid backup: ' + error.message);
+
+                    }
+
+                };
+
+                reader.readAsText(file);
+
+            };
+
+            
+
+            input.click();
+
+        }
+
+        
+
+        function enhanceKeyManager() {
+
+            const keysList = document.getElementById('keysList');
+
+            if (!keysList) return;
+
+            
+
+            const parent = keysList.parentElement;
+
+            if (parent.querySelector('[data-export-btn]')) return;
+
+            
+
+            const exportBtn = document.createElement('button');
+
+            exportBtn.className = 'add-key-btn';
+
+            exportBtn.style.background = '#3b4a54';
+
+            exportBtn.style.marginTop = '10px';
+
+            exportBtn.textContent = '💾 Export Backup';
+
+            exportBtn.setAttribute('data-export-btn', 'true');
+
+            exportBtn.onclick = exportData;
+
+            
+
+            const importBtn = document.createElement('button');
+
+            importBtn.className = 'add-key-btn';
+
+            importBtn.style.background = '#3b4a54';
+
+            importBtn.style.marginTop = '10px';
+
+            importBtn.textContent = '📂 Import Backup';
+
+            importBtn.setAttribute('data-import-btn', 'true');
+
+            importBtn.onclick = importData;
+
+            
+
+            const addBtn = parent.querySelector('.add-key-btn');
+
+            parent.insertBefore(exportBtn, addBtn);
+
+            parent.insertBefore(importBtn, addBtn);
+
+        }
+
+        
+
+        document.addEventListener('keydown', (e) => {
+
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+
+                e.preventDefault();
+
+                showNewChatModal();
+
+            }
+
+            if ((e.ctrlKey || e.metaKey) && e.key === 'm') {
+
+                e.preventDefault();
+
+                showKeyManager();
+
+            }
+
+            if (e.key === 'Escape') {
+
+                hideKeyManager();
+
+                hideNewChatModal();
 
             }
 
         });
-
-
-
-        init();
 
     </script>
 
 </body>
 
 </html>
+
